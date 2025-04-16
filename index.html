@@ -1,32 +1,307 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ramesh Basnet</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            text-align: center;
-            margin: 0;
-            padding: 0;
-        }
-        .container {
-            margin-top: 100px;
-        }
-        h1 {
-            color: #333;
-        }
-        p {
-            color: #666;
-        }
-    </style>
+  <meta charset="UTF-8" />
+  <title>Neuro Flight</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: #000;
+      overflow: hidden;
+      font-family: monospace;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: block;
+    }
+    #restartBtn, #difficultyContainer {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 18px;
+      font-family: monospace;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 12px;
+      z-index: 10;
+    }
+    #restartBtn {
+      top: 55%;
+      background: #0ff;
+      color: #000;
+      box-shadow: 0 0 20px #0ff;
+      display: none;
+      cursor: pointer;
+    }
+    #restartBtn:hover {
+      background: #00aaff;
+    }
+    #difficultyContainer {
+      top: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    #difficultySelect {
+      background: #111;
+      color: #0ff;
+      border: 2px solid #0ff;
+      padding: 5px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    #difficultyLabel {
+      color: #0ff;
+    }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Website Under Construction</h1>
-        <p>We're currently working on our website. Please check back soon!</p>
-    </div>
+  <canvas id="bgCanvas"></canvas>
+  <canvas id="gameCanvas"></canvas>
+
+  <button id="restartBtn">RESTART</button>
+  <div id="difficultyContainer">
+    <span id="difficultyLabel">Difficulty:</span>
+    <select id="difficultySelect">
+      <option value="easy">🧠 Easy</option>
+      <option value="medium" selected>⚡ Medium</option>
+      <option value="hard">🔥 Hard</option>
+    </select>
+  </div>
+
+  <script>
+    const bgCanvas = document.getElementById('bgCanvas');
+    const gameCanvas = document.getElementById('gameCanvas');
+    const bgCtx = bgCanvas.getContext('2d');
+    const ctx = gameCanvas.getContext('2d');
+    const restartBtn = document.getElementById("restartBtn");
+    const difficultySelect = document.getElementById("difficultySelect");
+
+    bgCanvas.width = gameCanvas.width = window.innerWidth;
+    bgCanvas.height = gameCanvas.height = window.innerHeight;
+
+    const WIDTH = gameCanvas.width;
+    const HEIGHT = gameCanvas.height;
+
+    // Neural Background
+    const neurons = Array.from({ length: 100 }, () => ({
+      x: Math.random() * WIDTH,
+      y: Math.random() * HEIGHT,
+      r: Math.random() * 2 + 1,
+      vx: (Math.random() - 0.5) * 0.5,
+      vy: (Math.random() - 0.5) * 0.5,
+    }));
+
+    function drawNeuralBackground() {
+      bgCtx.clearRect(0, 0, WIDTH, HEIGHT);
+      for (let i = 0; i < neurons.length; i++) {
+        const n1 = neurons[i];
+        n1.x += n1.vx;
+        n1.y += n1.vy;
+        if (n1.x < 0 || n1.x > WIDTH) n1.vx *= -1;
+        if (n1.y < 0 || n1.y > HEIGHT) n1.vy *= -1;
+
+        bgCtx.beginPath();
+        bgCtx.arc(n1.x, n1.y, n1.r, 0, Math.PI * 2);
+        bgCtx.fillStyle = '#0ff';
+        bgCtx.fill();
+
+        for (let j = i + 1; j < neurons.length; j++) {
+          const n2 = neurons[j];
+          const dx = n1.x - n2.x;
+          const dy = n1.y - n2.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 100) {
+            bgCtx.beginPath();
+            bgCtx.moveTo(n1.x, n1.y);
+            bgCtx.lineTo(n2.x, n2.y);
+            bgCtx.strokeStyle = `rgba(0,255,255,${1 - dist / 100})`;
+            bgCtx.lineWidth = 0.5;
+            bgCtx.stroke();
+          }
+        }
+      }
+    }
+    setInterval(drawNeuralBackground, 30);
+
+    // Game Variables
+    let gravity, pipeSpeed, pipeInterval, pipeGap;
+    let bird = {};
+    let pipes = [];
+    let frame = 0;
+    let score = 0;
+    let gameOver = false;
+
+    function setDifficulty(level) {
+      if (level === 'easy') {
+        gravity = 0.35;
+        pipeSpeed = 2.5;
+        pipeInterval = 120;
+        pipeGap = 220;
+      } else if (level === 'medium') {
+        gravity = 0.5;
+        pipeSpeed = 4;
+        pipeInterval = 100;
+        pipeGap = 160;
+      } else if (level === 'hard') {
+        gravity = 0.65;
+        pipeSpeed = 5.5;
+        pipeInterval = 80;
+        pipeGap = 130;
+      }
+    }
+
+    difficultySelect.addEventListener("change", () => {
+      setDifficulty(difficultySelect.value);
+      restartGame();
+    });
+
+    const flapStrength = -10;
+
+    function flap() {
+      if (!gameOver) bird.vy = flapStrength;
+    }
+
+    document.addEventListener("keydown", (e) => {
+      if (e.code === "Space") flap();
+    });
+    gameCanvas.addEventListener("click", flap);
+    restartBtn.addEventListener("click", restartGame);
+
+    function spawnPipe() {
+      const topHeight = Math.random() * (HEIGHT - pipeGap - 100) + 50;
+      pipes.push({
+        x: WIDTH,
+        w: 60,
+        top: topHeight,
+        bottom: HEIGHT - topHeight - pipeGap,
+        passed: false,
+      });
+    }
+
+    function drawBird() {
+      ctx.save();
+      ctx.translate(bird.x, bird.y);
+      ctx.rotate(Math.min(Math.PI / 4, bird.vy / 10));
+      ctx.beginPath();
+      ctx.moveTo(-15, -10);
+      ctx.lineTo(15, 0);
+      ctx.lineTo(-15, 10);
+      ctx.closePath();
+      ctx.fillStyle = "#0ff";
+      ctx.shadowColor = "#0ff";
+      ctx.shadowBlur = 20;
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.restore();
+    }
+
+    function drawPipes() {
+      for (let pipe of pipes) {
+        const gradientTop = ctx.createLinearGradient(pipe.x, 0, pipe.x + pipe.w, pipe.top);
+        gradientTop.addColorStop(0, '#222');
+        gradientTop.addColorStop(1, '#0ff');
+        const gradientBottom = ctx.createLinearGradient(pipe.x, HEIGHT - pipe.bottom, pipe.x + pipe.w, HEIGHT);
+        gradientBottom.addColorStop(0, '#0ff');
+        gradientBottom.addColorStop(1, '#222');
+
+        ctx.fillStyle = gradientTop;
+        ctx.beginPath();
+        ctx.roundRect(pipe.x, 0, pipe.w, pipe.top, 12);
+        ctx.fill();
+
+        ctx.fillStyle = gradientBottom;
+        ctx.beginPath();
+        ctx.roundRect(pipe.x, HEIGHT - pipe.bottom, pipe.w, pipe.bottom, 12);
+        ctx.fill();
+      }
+    }
+
+    CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
+      r = Math.min(r, w / 2, h / 2);
+      this.beginPath();
+      this.moveTo(x + r, y);
+      this.arcTo(x + w, y, x + w, y + h, r);
+      this.arcTo(x + w, y + h, x, y + h, r);
+      this.arcTo(x, y + h, x, y, r);
+      this.arcTo(x, y, x + w, y, r);
+      this.closePath();
+      return this;
+    };
+
+    function drawScore() {
+      ctx.fillStyle = "#fff";
+      ctx.font = "24px monospace";
+      ctx.fillText("Score: " + score, 20, 40);
+      if (gameOver) {
+        ctx.fillStyle = "#f55";
+        ctx.font = "bold 36px monospace";
+        ctx.fillText("GAME OVER", WIDTH / 2 - 100, HEIGHT / 2 - 40);
+        restartBtn.style.display = "block";
+      }
+    }
+
+    function updateGame() {
+      if (gameOver) return;
+
+      bird.vy += gravity;
+      bird.y += bird.vy;
+
+      if (frame % pipeInterval === 0) spawnPipe();
+      frame++;
+
+      for (let pipe of pipes) {
+        pipe.x -= pipeSpeed;
+
+        if (
+          bird.x + bird.r > pipe.x && bird.x - bird.r < pipe.x + pipe.w &&
+          (bird.y - bird.r < pipe.top || bird.y + bird.r > HEIGHT - pipe.bottom)
+        ) {
+          gameOver = true;
+        }
+
+        if (!pipe.passed && pipe.x + pipe.w < bird.x) {
+          score++;
+          pipe.passed = true;
+        }
+      }
+
+      if (bird.y + bird.r > HEIGHT || bird.y - bird.r < 0) {
+        gameOver = true;
+      }
+
+      pipes = pipes.filter(pipe => pipe.x + pipe.w > 0);
+    }
+
+    function drawGame() {
+      ctx.clearRect(0, 0, WIDTH, HEIGHT);
+      drawBird();
+      drawPipes();
+      drawScore();
+    }
+
+    function gameLoop() {
+      updateGame();
+      drawGame();
+      requestAnimationFrame(gameLoop);
+    }
+
+    function restartGame() {
+      bird = { x: 100, y: HEIGHT / 2, r: 15, vy: 0 };
+      pipes = [];
+      score = 0;
+      frame = 0;
+      gameOver = false;
+      restartBtn.style.display = "none";
+    }
+
+    // Init
+    setDifficulty(difficultySelect.value);
+    restartGame();
+    gameLoop();
+  </script>
 </body>
 </html>
