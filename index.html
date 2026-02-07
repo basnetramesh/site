@@ -2,306 +2,836 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Neuro Flight</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b0b0f'/%3E%3Ccircle cx='18' cy='20' r='6' fill='%237b61ff'/%3E%3Ccircle cx='46' cy='18' r='6' fill='%23ffffff'/%3E%3Ccircle cx='46' cy='46' r='6' fill='%237b61ff'/%3E%3Ccircle cx='18' cy='44' r='6' fill='%23ffffff'/%3E%3Cpath d='M18 20 L46 18 L46 46 L18 44 Z' stroke='%237b61ff' stroke-width='2' fill='none'/%3E%3C/svg%3E" />
+  <title>Ramesh Basnet</title>
   <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0b0f;
+      --panel: #14141d;
+      --text: #f5f6fb;
+      --muted: #b4b6c6;
+      --accent: #7b61ff;
+      --line: rgba(255, 255, 255, 0.06);
+    }
+    * {
+      box-sizing: border-box;
+    }
     html, body {
       margin: 0;
       padding: 0;
-      background: #000;
-      overflow: hidden;
-      font-family: monospace;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
     }
-    canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      display: block;
+    body {
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      padding: 48px 24px 80px;
     }
-    #restartBtn, #difficultyContainer {
-      position: absolute;
-      left: 50%;
-      transform: translateX(-50%);
-      font-size: 18px;
-      font-family: monospace;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 12px;
-      z-index: 10;
+    #bgCanvas {
+      position: fixed;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+      opacity: 0.85;
     }
-    #restartBtn {
-      top: 55%;
-      background: #0ff;
-      color: #000;
-      box-shadow: 0 0 20px #0ff;
-      display: none;
-      cursor: pointer;
+    .page {
+      width: min(1100px, 100%);
+      display: grid;
+      gap: 36px;
+      position: relative;
+      z-index: 1;
     }
-    #restartBtn:hover {
-      background: #00aaff;
+    header {
+      display: grid;
+      gap: 12px;
     }
-    #difficultyContainer {
-      top: 20px;
+    .eyebrow {
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(32px, 4vw, 48px);
+    }
+    .reveal-name {
+      color: var(--text);
+      position: relative;
+      display: inline-block;
+      -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 50%, transparent 100%);
+      mask-image: linear-gradient(to bottom, #000 0%, #000 50%, transparent 100%);
+      -webkit-mask-size: 100% 200%;
+      mask-size: 100% 200%;
+      -webkit-mask-position: 0 100%;
+      mask-position: 0 100%;
+      animation: name-reveal 2.0s ease forwards;
+    }
+    @keyframes name-reveal {
+      to {
+        -webkit-mask-position: 0 0;
+        mask-position: 0 0;
+      }
+    }
+    .subtitle {
+      margin: 0;
+      max-width: 640px;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+    .links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 6px;
+    }
+    .section-links {
+      display: flex;
+      gap: 12px;
+      margin-top: -8px;
+    }
+    .link-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 13px;
+      color: var(--text);
+      text-decoration: none;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--accent);
+      transition: transform 0.2s ease, border 0.2s ease;
+    }
+    .link-btn:hover,
+    .link-btn:focus-visible {
+      transform: translateY(-1px);
+      border-color: rgba(123, 97, 255, 0.4);
+    }
+    .link-icon {
+      width: 16px;
+      height: 16px;
+      color: var(--accent);
+      flex-shrink: 0;
+    }
+    .text-link {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      letter-spacing: 0.02em;
+    }
+    .text-link:hover,
+    .text-link:focus-visible {
+      color: var(--text);
+    }
+    .section {
+      display: grid;
+      gap: 18px;
+    }
+    .section-head {
       display: flex;
       align-items: center;
-      gap: 10px;
+      justify-content: space-between;
+      gap: 12px;
     }
-    #difficultySelect {
-      background: #111;
-      color: #0ff;
-      border: 2px solid #0ff;
-      padding: 5px 10px;
-      border-radius: 8px;
+    .section-title {
+      margin: 0;
+      font-size: 14px;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .section-toggle {
+      width: 28px;
+      height: 28px;
+      border-radius: 999px;
+      border: 1px solid var(--accent);
+      background: transparent;
+      color: var(--muted);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       cursor: pointer;
+      transition: border 0.2s ease, color 0.2s ease, transform 0.2s ease;
     }
-    #difficultyLabel {
-      color: #0ff;
+    .section-toggle:hover,
+    .section-toggle:focus-visible {
+      border-color: var(--accent);
+      color: var(--text);
+      transform: translateY(-1px);
+    }
+    .section-toggle svg {
+      width: 12px;
+      height: 12px;
+    }
+    .section-toggle[aria-pressed="true"] .toggle-vertical {
+      opacity: 0;
+    }
+    .timeline {
+      position: relative;
+      padding-left: 32px;
+      display: grid;
+      gap: 18px;
+    }
+    .timeline::before {
+      content: "";
+      position: absolute;
+      left: 12px;
+      top: 8px;
+      bottom: 8px;
+      width: 2px;
+      background: var(--line);
+    }
+    .timeline-item {
+      position: relative;
+      padding: 18px 20px;
+      border-radius: 14px;
+      background: var(--panel);
+      border: 1px solid var(--line);
+      display: grid;
+      gap: 12px;
+      transition: transform 0.2s ease, border 0.2s ease, box-shadow 0.2s ease;
+    }
+    .timeline-item::before {
+      content: "";
+      position: absolute;
+      left: -28px;
+      top: 24px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+    .timeline-item:hover {
+      transform: translateY(-2px);
+      border-color: rgba(123, 97, 255, 0.4);
+    }
+    .role {
+      font-size: 18px;
+      font-weight: 600;
+      margin: 0;
+      transition: color 0.2s ease;
+    }
+    .company {
+      color: var(--muted);
+      font-size: 14px;
+      margin: 0;
+      transition: color 0.2s ease;
+    }
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 16px;
+      color: var(--muted);
+      font-size: 13px;
+      align-items: center;
+      transition: color 0.2s ease;
+    }
+    .badge {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--line);
+    }
+    .details {
+      display: grid;
+      gap: 6px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transform: translateY(8px);
+      transition: max-height 0.7s ease, opacity 0.4s ease, transform 0.35s ease;
+    }
+    .skill-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .skill-tags span {
+      font-size: 12px;
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.06);
+      padding: 4px 8px;
+      border-radius: 999px;
+    }
+    .note {
+      font-size: 12px;
+      color: var(--muted);
+      margin: 0;
+    }
+    .hover-reveal .meta,
+    .hover-reveal .details {
+      max-height: 0;
+      opacity: 0;
+      overflow: hidden;
+      transform: translateY(8px);
+      transition: max-height 0.9s ease, opacity 0.45s ease, transform 0.45s ease;
+    }
+    .hover-reveal:hover .meta,
+    .hover-reveal:hover .details {
+      max-height: 520px;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .hover-reveal:hover .role,
+    .hover-reveal:hover .company,
+    .hover-reveal:hover .meta {
+      color: var(--text);
+    }
+    .hover-reveal.is-closed:hover .meta,
+    .hover-reveal.is-closed:hover .details {
+      max-height: 0;
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    .hover-reveal.is-closed .meta,
+    .hover-reveal.is-closed .details {
+      transition: max-height 0.25s ease-out, opacity 0.15s ease-out, transform 0.15s ease-out;
+    }
+    .hover-reveal.is-closed:hover .role,
+    .hover-reveal.is-closed:hover .company,
+    .hover-reveal.is-closed:hover .meta {
+      color: var(--muted);
+    }
+    .hover-reveal.is-open .meta,
+    .hover-reveal.is-open .details {
+      max-height: 520px;
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .hover-reveal.is-open .role,
+    .hover-reveal.is-open .company,
+    .hover-reveal.is-open .meta {
+      color: var(--text);
+    }
+    @media (max-width: 700px) {
+      body {
+        padding: 32px 16px 60px;
+      }
+      .timeline {
+        padding-left: 26px;
+      }
+      .timeline-item::before {
+        left: -24px;
+      }
     }
   </style>
 </head>
 <body>
-  <canvas id="bgCanvas"></canvas>
-  <canvas id="gameCanvas"></canvas>
+  <canvas id="bgCanvas" aria-hidden="true"></canvas>
+  <main class="page">
+    <header>
+      <h1 class="reveal-name">Ramesh Basnet</h1>
+      <p class="subtitle">
+        A concise record of experience, education, community work, and research.
+      </p>
+      <div class="links">
+        <a class="link-btn" href="https://www.linkedin.com/in/basnetr/" target="_blank" rel="noopener noreferrer">
+          <svg class="link-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor" d="M4.98 3.5A2.5 2.5 0 1 0 5 8.5a2.5 2.5 0 0 0-.02-5ZM3 9h4v12H3V9Zm7 0h3.82v1.64h.05c.53-.96 1.82-1.98 3.75-1.98 4 0 4.74 2.63 4.74 6.05V21h-4v-5.3c0-1.26-.02-2.89-1.76-2.89-1.77 0-2.04 1.38-2.04 2.8V21h-4V9Z"/>
+          </svg>
+          LinkedIn Profile
+        </a>
+        <a class="link-btn" href="http://github.com/basnetr" target="_blank" rel="noopener noreferrer">
+          <svg class="link-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor" d="M12 2C6.48 2 2 6.59 2 12.25c0 4.52 2.87 8.35 6.84 9.71.5.1.68-.22.68-.48 0-.24-.01-.88-.01-1.73-2.78.62-3.37-1.38-3.37-1.38-.45-1.2-1.11-1.52-1.11-1.52-.9-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.9 1.56 2.36 1.11 2.94.85.09-.66.35-1.11.63-1.36-2.22-.26-4.56-1.14-4.56-5.09 0-1.13.39-2.05 1.03-2.77-.1-.26-.45-1.33.1-2.76 0 0 .84-.27 2.75 1.05a9.3 9.3 0 0 1 5 0c1.9-1.32 2.74-1.05 2.74-1.05.55 1.43.2 2.5.1 2.76.64.72 1.02 1.64 1.02 2.77 0 3.96-2.34 4.83-4.58 5.08.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.6.69.48A10.25 10.25 0 0 0 22 12.25C22 6.59 17.52 2 12 2Z"/>
+          </svg>
+          GitHub
+        </a>
+        <a class="link-btn" href="mailto:rameshbasnet@proton.me">
+          <svg class="link-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor" d="M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Zm0 2v.4l8 5.2 8-5.2V7H4Zm16 10V9.6l-7.46 4.85a1 1 0 0 1-1.08 0L4 9.6V17h16Z"/>
+          </svg>
+          rameshbasnet@proton.me
+        </a>
+      </div>
+    </header>
 
-  <button id="restartBtn">RESTART</button>
-  <div id="difficultyContainer">
-    <span id="difficultyLabel">Difficulty:</span>
-    <select id="difficultySelect">
-      <option value="easy">🧠 Easy</option>
-      <option value="medium" selected>⚡ Medium</option>
-      <option value="hard">🔥 Hard</option>
-    </select>
-  </div>
+    <section class="section" aria-label="Experience">
+      <div class="section-head">
+        <h2 class="section-title">Experience</h2>
+        <button class="section-toggle" type="button" aria-label="Expand section" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path class="toggle-horizontal" d="M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path class="toggle-vertical" d="M12 5v14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="timeline">
+        <article class="timeline-item hover-reveal">
+        <div>
+          <h2 class="role">Senior Machine Learning Engineer</h2>
+          <p class="company">ModelCatAI (formerly Eta Compute) · Permanent Full-time</p>
+        </div>
+        <div class="meta">
+          <span class="badge duration" data-start="2022-07" data-end="present"></span>
+          <span class="badge">Sunnyvale, California (Remote)</span>
+        </div>
+        <div class="details">
+          <p>
+            Researcher and developer of an AutoML system for embedded devices focused on
+            neural architecture search, automated hyperparameter optimization, parallel
+            computation, quantization, and deployment of computer vision models.
+          </p>
+          <p>
+            Delivered production-ready tooling to accelerate model iteration speed while
+            meeting strict power and latency constraints on edge hardware.
+          </p>
+          <div class="skill-tags">
+            <span>AutoML</span>
+            <span>NAS</span>
+            <span>Quantization</span>
+            <span>Keras</span>
+            <span>TensorFlow</span>
+            <span>PyTorch</span>
+            <span>Parallel Compute</span>
+          </div>
+        </div>
+        </article>
+
+        <article class="timeline-item hover-reveal">
+        <div>
+          <h2 class="role">Machine Learning Software Developer</h2>
+          <p class="company">Circle Cardiovascular Imaging · Permanent Full-time</p>
+        </div>
+        <div class="meta">
+          <span class="badge">Feb 2021 - May 2022 · 1 yr 4 mos</span>
+          <span class="badge">Calgary, Alberta</span>
+        </div>
+        <div class="details">
+          <p>
+            Spearheaded development of advanced ML algorithms for cardiovascular
+            healthcare, including 3D medical image segmentation, motion artifact
+            remediation, and disease biomarker detection across CMR and CCTA data.
+          </p>
+          <p>
+            Collaborated with cardiologists and research teams in North America and
+            Europe, producing published research integrated into the cvi42® platform.
+          </p>
+          <div class="skill-tags">
+            <span>TensorFlow</span>
+            <span>Keras</span>
+            <span>PyTorch</span>
+            <span>DICOM</span>
+            <span>3D Segmentation</span>
+            <span>Clinical ML</span>
+          </div>
+        </div>
+        </article>
+
+        <article class="timeline-item hover-reveal">
+        <div>
+          <h2 class="role">Graduate Research Assistant - Machine Learning</h2>
+          <p class="company">Concordia University</p>
+        </div>
+        <div class="meta">
+          <span class="badge">2018 - 2020 · 2 yrs</span>
+          <span class="badge">Montreal, Quebec</span>
+        </div>
+        <div class="details">
+          <p>
+            Developed state-of-the-art deep learning algorithms for medical image
+            processing with journal publications in IEEE TMI and BSPC.
+          </p>
+          <p>
+            Ranked second in a performance metric and placed among the top eight
+            participants globally in the MICCAI iSeg 2019 challenge.
+          </p>
+          <div class="skill-tags">
+            <span>Research</span>
+            <span>Medical Imaging</span>
+            <span>Deep Learning</span>
+            <span>Publication</span>
+          </div>
+        </div>
+        </article>
+
+        <article class="timeline-item hover-reveal">
+        <div>
+          <h2 class="role">Undergraduate Researcher - Machine Learning</h2>
+          <p class="company">Bangladesh University of Engineering and Technology</p>
+        </div>
+        <div class="meta">
+          <span class="badge">2016 - 2017 · 1 yr</span>
+          <span class="badge">Dhaka, Bangladesh</span>
+        </div>
+        <div class="details">
+          <p>
+            Designed ML models for continuous emotional state prediction from
+            audio-visual data, delivering robust performance and first-authored
+            publications in Pattern Recognition Letters and ICTCS.
+          </p>
+          <div class="skill-tags">
+            <span>TensorFlow</span>
+            <span>Signal Processing</span>
+            <span>Audio-Visual ML</span>
+            <span>Research</span>
+          </div>
+        </div>
+        </article>
+
+        <article class="timeline-item hover-reveal">
+          <div>
+            <h2 class="role">News Presenter (External Service - Nepali)</h2>
+            <p class="company">Bangladesh Betar</p>
+          </div>
+          <div class="meta">
+            <span class="badge">2013 - 2017 · 4 yrs</span>
+            <span class="badge">Dhaka, Bangladesh</span>
+          </div>
+          <div class="details">
+            <p>
+              Presented news, commentaries, economic reviews, and special talks live on air.
+              Organized opening, musical, and closing sessions of the program.
+            </p>
+            <p>
+              Collaborated with artists of different nationalities and languages to translate news.
+            </p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" aria-label="Education">
+      <div class="section-head">
+        <h2 class="section-title">Education</h2>
+        <button class="section-toggle" type="button" aria-label="Expand section" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path class="toggle-horizontal" d="M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path class="toggle-vertical" d="M12 5v14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="timeline">
+        <article class="timeline-item hover-reveal">
+          <div>
+            <h2 class="role">Master of Applied Science, Electrical and Computer Engineering</h2>
+            <p class="company">Concordia University</p>
+          </div>
+          <div class="meta">
+            <span class="badge">2018 - 2020</span>
+            <span class="badge">Montreal, Quebec</span>
+          </div>
+          <div class="details">
+            <p>
+              Thesis: A Parameter-Efficient Deep Dense Residual Convolutional Neural Network for
+              Volumetric Brain Tissue Segmentation from Magnetic Resonance Images.
+            </p>
+            <p>Supervisors: Dr. M. Omair Ahmad and Dr. M.N.S. Swamy.</p>
+          </div>
+        </article>
+
+        <article class="timeline-item hover-reveal">
+          <div>
+            <h2 class="role">Bachelor of Science, Electrical and Electronic Engineering</h2>
+            <p class="company">Bangladesh University of Engineering and Technology</p>
+          </div>
+          <div class="meta">
+            <span class="badge">2012 - 2017</span>
+            <span class="badge">Dhaka, Bangladesh</span>
+          </div>
+          <div class="details">
+            <p>
+              Thesis: Estimation of Instantaneous Affective Dimension from Audio-Visual Data Using
+              Two-Stream CNN.
+            </p>
+            <p>Supervisor: Dr. S. M. Mahbubur Rahman.</p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" aria-label="Volunteering">
+      <div class="section-head">
+        <h2 class="section-title">Volunteering</h2>
+        <button class="section-toggle" type="button" aria-label="Expand section" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path class="toggle-horizontal" d="M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path class="toggle-vertical" d="M12 5v14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="timeline">
+        <article class="timeline-item hover-reveal">
+          <div>
+            <h2 class="role">Radio Host</h2>
+            <p class="company">RED FM Canada</p>
+          </div>
+          <div class="meta">
+            <span class="badge duration" data-start="2022-07" data-end="present"></span>
+            <span class="badge">Calgary, Alberta</span>
+          </div>
+          <div class="details">
+            <p>
+              Host a weekly radio program dedicated to promoting Nepali culture, traditions,
+              and heritage.
+            </p>
+            <p>
+              Conduct interviews with guests to share insights and experiences on successful
+              settlement in Canada, diverse opportunities, and business endeavors.
+            </p>
+          </div>
+        </article>
+
+        <article class="timeline-item hover-reveal">
+          <div>
+            <h2 class="role">Organizer</h2>
+            <p class="company">Help Nepal - Fundraising Programme</p>
+          </div>
+          <div class="meta">
+          <span class="badge">Apr 2015 · 1 mo</span>
+          <span class="badge">Disaster and Humanitarian Relief</span>
+          <span class="badge">Dhaka, Bangladesh</span>
+          </div>
+          <div class="details">
+            <p>
+              Collected relief funds for the victims of the April 2015 Nepal earthquake from
+              universities in Bangladesh.
+            </p>
+            <p>
+              Supplied relief materials with support from the Embassy of Nepal, Dhaka, and
+              organized a candlelight vigil in memory of lost lives.
+            </p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="section" aria-label="Publications">
+      <div class="section-head">
+        <h2 class="section-title">Publications</h2>
+        <button class="section-toggle" type="button" aria-label="Expand section" aria-pressed="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path class="toggle-horizontal" d="M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path class="toggle-vertical" d="M12 5v14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="section-links">
+        <a class="link-btn" href="https://www.linkedin.com/in/basnetr/details/publications/" target="_blank" rel="noopener noreferrer">
+          <svg class="link-icon" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="currentColor" d="M4.98 3.5A2.5 2.5 0 1 0 5 8.5a2.5 2.5 0 0 0-.02-5ZM3 9h4v12H3V9Zm7 0h3.82v1.64h.05c.53-.96 1.82-1.98 3.75-1.98 4 0 4.74 2.63 4.74 6.05V21h-4v-5.3c0-1.26-.02-2.89-1.76-2.89-1.77 0-2.04 1.38-2.04 2.8V21h-4V9Z"/>
+          </svg>
+          View all on LinkedIn
+        </a>
+      </div>
+      <div class="timeline">
+        <article class="timeline-item hover-reveal">
+          <div>
+            <h2 class="role">Interaction of a priori Anatomic Knowledge with Self-Supervised Contrastive Learning in Cardiac Magnetic Resonance Imaging</h2>
+            <p class="company">arXiv · May 25, 2022</p>
+          </div>
+          <div class="details">
+            <p>
+              Evaluates incorporating explicit anatomic localization into SSCL pretraining for CMR
+              to improve downstream diagnostic performance and saliency.
+            </p>
+          </div>
+        </article>
+
+        <article class="timeline-item hover-reveal">
+          <div>
+            <h2 class="role">Comparison of Deep Learning and Radiomic Features to Differentiate Non-Ischemic and Ischemic Cardiomyopathy Using Cardiac MRI Cine Imaging</h2>
+            <p class="company">Circulation · Nov 16, 2021</p>
+          </div>
+          <div class="details">
+            <p>
+              Compares DL and radiomics approaches to classify ischemic vs non-ischemic
+              cardiomyopathy using CMR short axis cine imaging.
+            </p>
+          </div>
+        </article>
+
+        <article class="timeline-item hover-reveal">
+          <div>
+            <h2 class="role">A deep dense residual network with reduced parameters for volumetric brain tissue segmentation from MR images</h2>
+            <p class="company">Biomedical Signal Processing and Control · Aug 24, 2021</p>
+          </div>
+          <div class="details">
+            <p>
+              Introduces a compact 3D U-Net style architecture with dense connections and residual
+              links for efficient brain tissue segmentation.
+            </p>
+          </div>
+        </article>
+
+        <article class="timeline-item hover-reveal">
+          <div>
+            <h2 class="role">Benchmark on multiple site infant brain segmentation algorithms: The iSeg-2019 challenge</h2>
+            <p class="company">IEEE Transactions on Medical Imaging · Jan 28, 2021</p>
+          </div>
+          <div class="details">
+            <p>
+              Reviews top-performing methods and highlights challenges in multi-site infant brain
+              segmentation consistency.
+            </p>
+          </div>
+        </article>
+
+        <article class="timeline-item hover-reveal">
+          <div>
+            <h2 class="role">Estimation of affective dimensions using CNN-based features of audiovisual data</h2>
+            <p class="company">Pattern Recognition Letters · Sep 17, 2019</p>
+          </div>
+          <div class="details">
+            <p>
+              Investigates two-stream CNNs and feature selection for predicting continuous emotional
+              state dimensions from audiovisual data.
+            </p>
+          </div>
+        </article>
+
+        <article class="timeline-item hover-reveal">
+          <div>
+            <h2 class="role">Statistical Selection of CNN-based Audiovisual Features for Instantaneous Estimation of Human Emotional States</h2>
+            <p class="company">2017 International Conference on New Trends in Computing Sciences (ICTCS) · Jan 11, 2018</p>
+          </div>
+          <div class="details">
+            <p>
+              Presents mutual information-based selection of CNN features for frame-by-frame
+              emotional state prediction.
+            </p>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <p class="note"></p>
+  </main>
 
   <script>
-    const bgCanvas = document.getElementById('bgCanvas');
-    const gameCanvas = document.getElementById('gameCanvas');
-    const bgCtx = bgCanvas.getContext('2d');
-    const ctx = gameCanvas.getContext('2d');
-    const restartBtn = document.getElementById("restartBtn");
-    const difficultySelect = document.getElementById("difficultySelect");
+    const bgCanvas = document.getElementById("bgCanvas");
+    const bgCtx = bgCanvas.getContext("2d");
+    const nodes = [];
+    const nodeCount = 80;
+    const maxDist = 160;
 
-    bgCanvas.width = gameCanvas.width = window.innerWidth;
-    bgCanvas.height = gameCanvas.height = window.innerHeight;
+    function resizeBg() {
+      bgCanvas.width = window.innerWidth;
+      bgCanvas.height = window.innerHeight;
+    }
 
-    const WIDTH = gameCanvas.width;
-    const HEIGHT = gameCanvas.height;
+    function initNodes() {
+      nodes.length = 0;
+      for (let i = 0; i < nodeCount; i++) {
+        nodes.push({
+          x: Math.random() * bgCanvas.width,
+          y: Math.random() * bgCanvas.height,
+          vx: (Math.random() - 0.5) * 0.5,
+          vy: (Math.random() - 0.5) * 0.5,
+          r: Math.random() * 1.8 + 0.6,
+        });
+      }
+    }
 
-    // Neural Background
-    const neurons = Array.from({ length: 100 }, () => ({
-      x: Math.random() * WIDTH,
-      y: Math.random() * HEIGHT,
-      r: Math.random() * 2 + 1,
-      vx: (Math.random() - 0.5) * 0.5,
-      vy: (Math.random() - 0.5) * 0.5,
-    }));
-
-    function drawNeuralBackground() {
-      bgCtx.clearRect(0, 0, WIDTH, HEIGHT);
-      for (let i = 0; i < neurons.length; i++) {
-        const n1 = neurons[i];
-        n1.x += n1.vx;
-        n1.y += n1.vy;
-        if (n1.x < 0 || n1.x > WIDTH) n1.vx *= -1;
-        if (n1.y < 0 || n1.y > HEIGHT) n1.vy *= -1;
+    function drawBackground() {
+      bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+      for (let i = 0; i < nodes.length; i++) {
+        const a = nodes[i];
+        a.x += a.vx;
+        a.y += a.vy;
+        if (a.x < 0 || a.x > bgCanvas.width) a.vx *= -1;
+        if (a.y < 0 || a.y > bgCanvas.height) a.vy *= -1;
 
         bgCtx.beginPath();
-        bgCtx.arc(n1.x, n1.y, n1.r, 0, Math.PI * 2);
-        bgCtx.fillStyle = '#0ff';
+        bgCtx.arc(a.x, a.y, a.r, 0, Math.PI * 2);
+        bgCtx.fillStyle = "rgba(255, 255, 255, 0.75)";
         bgCtx.fill();
 
-        for (let j = i + 1; j < neurons.length; j++) {
-          const n2 = neurons[j];
-          const dx = n1.x - n2.x;
-          const dy = n1.y - n2.y;
+        for (let j = i + 1; j < nodes.length; j++) {
+          const b = nodes[j];
+          const dx = a.x - b.x;
+          const dy = a.y - b.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
-          if (dist < 100) {
+          if (dist < maxDist) {
+            const alpha = 1 - dist / maxDist;
             bgCtx.beginPath();
-            bgCtx.moveTo(n1.x, n1.y);
-            bgCtx.lineTo(n2.x, n2.y);
-            bgCtx.strokeStyle = `rgba(0,255,255,${1 - dist / 100})`;
-            bgCtx.lineWidth = 0.5;
+            bgCtx.moveTo(a.x, a.y);
+            bgCtx.lineTo(b.x, b.y);
+            bgCtx.strokeStyle = `rgba(123, 97, 255, ${0.6 * alpha})`;
+            bgCtx.lineWidth = 1;
+            bgCtx.stroke();
+            bgCtx.strokeStyle = `rgba(255, 255, 255, ${0.25 * alpha})`;
+            bgCtx.lineWidth = 0.6;
             bgCtx.stroke();
           }
         }
       }
-    }
-    setInterval(drawNeuralBackground, 30);
-
-    // Game Variables
-    let gravity, pipeSpeed, pipeInterval, pipeGap;
-    let bird = {};
-    let pipes = [];
-    let frame = 0;
-    let score = 0;
-    let gameOver = false;
-
-    function setDifficulty(level) {
-      if (level === 'easy') {
-        gravity = 0.35;
-        pipeSpeed = 2.5;
-        pipeInterval = 120;
-        pipeGap = 220;
-      } else if (level === 'medium') {
-        gravity = 0.5;
-        pipeSpeed = 4;
-        pipeInterval = 100;
-        pipeGap = 160;
-      } else if (level === 'hard') {
-        gravity = 0.65;
-        pipeSpeed = 5.5;
-        pipeInterval = 80;
-        pipeGap = 130;
-      }
+      requestAnimationFrame(drawBackground);
     }
 
-    difficultySelect.addEventListener("change", () => {
-      setDifficulty(difficultySelect.value);
-      restartGame();
+    resizeBg();
+    initNodes();
+    drawBackground();
+    window.addEventListener("resize", () => {
+      resizeBg();
+      initNodes();
     });
 
-    const flapStrength = -10;
+    const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-    function flap() {
-      if (!gameOver) bird.vy = flapStrength;
+    function formatDuration(totalMonths) {
+      const years = Math.floor(totalMonths / 12);
+      const months = totalMonths % 12;
+      const yearLabel = years === 1 ? "1 yr" : `${years} yrs`;
+      const monthLabel = months === 1 ? "1 mo" : `${months} mos`;
+      if (years === 0) return monthLabel;
+      if (months === 0) return yearLabel;
+      return `${yearLabel} ${monthLabel}`;
     }
 
-    document.addEventListener("keydown", (e) => {
-      if (e.code === "Space") flap();
-    });
-    gameCanvas.addEventListener("click", flap);
-    restartBtn.addEventListener("click", restartGame);
-
-    function spawnPipe() {
-      const topHeight = Math.random() * (HEIGHT - pipeGap - 100) + 50;
-      pipes.push({
-        x: WIDTH,
-        w: 60,
-        top: topHeight,
-        bottom: HEIGHT - topHeight - pipeGap,
-        passed: false,
+    function renderDurations() {
+      const now = new Date();
+      document.querySelectorAll(".duration[data-start][data-end='present']").forEach((el) => {
+        const startValue = el.getAttribute("data-start");
+        if (!startValue) return;
+        const [year, month] = startValue.split("-").map(Number);
+        const startDate = new Date(year, month - 1, 1);
+        const totalMonths =
+          (now.getFullYear() - startDate.getFullYear()) * 12 +
+          (now.getMonth() - startDate.getMonth());
+        const startLabel = `${monthNames[startDate.getMonth()]} ${startDate.getFullYear()}`;
+        el.textContent = `${startLabel} - Present · ${formatDuration(Math.max(totalMonths, 0))}`;
       });
     }
 
-    function drawBird() {
-      ctx.save();
-      ctx.translate(bird.x, bird.y);
-      ctx.rotate(Math.min(Math.PI / 4, bird.vy / 10));
-      ctx.beginPath();
-      ctx.moveTo(-15, -10);
-      ctx.lineTo(15, 0);
-      ctx.lineTo(-15, 10);
-      ctx.closePath();
-      ctx.fillStyle = "#0ff";
-      ctx.shadowColor = "#0ff";
-      ctx.shadowBlur = 20;
-      ctx.fill();
-      ctx.shadowBlur = 0;
-      ctx.restore();
-    }
+    renderDurations();
 
-    function drawPipes() {
-      for (let pipe of pipes) {
-        const gradientTop = ctx.createLinearGradient(pipe.x, 0, pipe.x + pipe.w, pipe.top);
-        gradientTop.addColorStop(0, '#222');
-        gradientTop.addColorStop(1, '#0ff');
-        const gradientBottom = ctx.createLinearGradient(pipe.x, HEIGHT - pipe.bottom, pipe.x + pipe.w, HEIGHT);
-        gradientBottom.addColorStop(0, '#0ff');
-        gradientBottom.addColorStop(1, '#222');
+    document.querySelectorAll(".hover-reveal").forEach((card) => {
+      card.addEventListener("click", (event) => {
+        if (event.target.closest("a")) return;
+        const isOpen = card.classList.contains("is-open");
+        card.classList.toggle("is-open", !isOpen);
+        card.classList.toggle("is-closed", isOpen);
+      });
+      card.addEventListener("mouseleave", () => {
+        card.classList.remove("is-closed");
+      });
+    });
 
-        ctx.fillStyle = gradientTop;
-        ctx.beginPath();
-        ctx.roundRect(pipe.x, 0, pipe.w, pipe.top, 12);
-        ctx.fill();
-
-        ctx.fillStyle = gradientBottom;
-        ctx.beginPath();
-        ctx.roundRect(pipe.x, HEIGHT - pipe.bottom, pipe.w, pipe.bottom, 12);
-        ctx.fill();
-      }
-    }
-
-    CanvasRenderingContext2D.prototype.roundRect = function(x, y, w, h, r) {
-      r = Math.min(r, w / 2, h / 2);
-      this.beginPath();
-      this.moveTo(x + r, y);
-      this.arcTo(x + w, y, x + w, y + h, r);
-      this.arcTo(x + w, y + h, x, y + h, r);
-      this.arcTo(x, y + h, x, y, r);
-      this.arcTo(x, y, x + w, y, r);
-      this.closePath();
-      return this;
-    };
-
-    function drawScore() {
-      ctx.fillStyle = "#fff";
-      ctx.font = "24px monospace";
-      ctx.fillText("Score: " + score, 20, 40);
-      if (gameOver) {
-        ctx.fillStyle = "#f55";
-        ctx.font = "bold 36px monospace";
-        ctx.fillText("GAME OVER", WIDTH / 2 - 100, HEIGHT / 2 - 40);
-        restartBtn.style.display = "block";
-      }
-    }
-
-    function updateGame() {
-      if (gameOver) return;
-
-      bird.vy += gravity;
-      bird.y += bird.vy;
-
-      if (frame % pipeInterval === 0) spawnPipe();
-      frame++;
-
-      for (let pipe of pipes) {
-        pipe.x -= pipeSpeed;
-
-        if (
-          bird.x + bird.r > pipe.x && bird.x - bird.r < pipe.x + pipe.w &&
-          (bird.y - bird.r < pipe.top || bird.y + bird.r > HEIGHT - pipe.bottom)
-        ) {
-          gameOver = true;
-        }
-
-        if (!pipe.passed && pipe.x + pipe.w < bird.x) {
-          score++;
-          pipe.passed = true;
-        }
-      }
-
-      if (bird.y + bird.r > HEIGHT || bird.y - bird.r < 0) {
-        gameOver = true;
-      }
-
-      pipes = pipes.filter(pipe => pipe.x + pipe.w > 0);
-    }
-
-    function drawGame() {
-      ctx.clearRect(0, 0, WIDTH, HEIGHT);
-      drawBird();
-      drawPipes();
-      drawScore();
-    }
-
-    function gameLoop() {
-      updateGame();
-      drawGame();
-      requestAnimationFrame(gameLoop);
-    }
-
-    function restartGame() {
-      bird = { x: 100, y: HEIGHT / 2, r: 15, vy: 0 };
-      pipes = [];
-      score = 0;
-      frame = 0;
-      gameOver = false;
-      restartBtn.style.display = "none";
-    }
-
-    // Init
-    setDifficulty(difficultySelect.value);
-    restartGame();
-    gameLoop();
+    document.querySelectorAll(".section").forEach((section) => {
+      const toggle = section.querySelector(".section-toggle");
+      if (!toggle) return;
+      toggle.addEventListener("click", () => {
+        const cards = Array.from(section.querySelectorAll(".hover-reveal"));
+        if (cards.length === 0) return;
+        const allOpen = cards.every((card) => card.classList.contains("is-open"));
+        cards.forEach((card) => {
+          card.classList.toggle("is-open", !allOpen);
+          card.classList.toggle("is-closed", allOpen);
+        });
+        toggle.setAttribute("aria-pressed", String(!allOpen));
+      });
+    });
   </script>
 </body>
 </html>
