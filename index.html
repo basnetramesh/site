@@ -65,13 +65,40 @@
       color: var(--text);
       position: relative;
       display: inline-block;
-      -webkit-mask-image: linear-gradient(to bottom, #000 0%, #000 50%, transparent 100%);
-      mask-image: linear-gradient(to bottom, #000 0%, #000 50%, transparent 100%);
+      cursor: pointer;
+      -webkit-mask-image: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(0, 0, 0, 0.35) 16%,
+        rgba(0, 0, 0, 0.7) 32%,
+        #000 50%,
+        rgba(0, 0, 0, 0.7) 68%,
+        rgba(0, 0, 0, 0.35) 84%,
+        transparent 100%
+      );
+      mask-image: linear-gradient(
+        to bottom,
+        transparent 0%,
+        rgba(0, 0, 0, 0.35) 16%,
+        rgba(0, 0, 0, 0.7) 32%,
+        #000 50%,
+        rgba(0, 0, 0, 0.7) 68%,
+        rgba(0, 0, 0, 0.35) 84%,
+        transparent 100%
+      );
       -webkit-mask-size: 100% 200%;
       mask-size: 100% 200%;
-      -webkit-mask-position: 0 100%;
-      mask-position: 0 100%;
-      animation: name-reveal 2.0s ease forwards;
+      -webkit-mask-position: 0 130%;
+      mask-position: 0 130%;
+      animation: name-reveal 3.5s ease forwards;
+    }
+    .reveal-name:hover {
+      -webkit-mask-image: none;
+      mask-image: none;
+    }
+    .reveal-name.is-unmasked {
+      -webkit-mask-image: none;
+      mask-image: none;
     }
     @keyframes name-reveal {
       to {
@@ -108,6 +135,7 @@
       background: rgba(255, 255, 255, 0.04);
       border: 1px solid var(--accent);
       transition: transform 0.2s ease, border 0.2s ease;
+      position: relative;
     }
     .link-btn:hover,
     .link-btn:focus-visible {
@@ -119,6 +147,32 @@
       height: 16px;
       color: var(--accent);
       flex-shrink: 0;
+    }
+    .scramble-text {
+      display: inline-block;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      line-height: 1.25;
+    }
+    .copy-toast {
+      position: absolute;
+      bottom: 120%;
+      left: 50%;
+      transform: translateX(-50%) translateY(6px);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 11px;
+      letter-spacing: 0.02em;
+      color: var(--text);
+      background: rgba(20, 19, 40, 0.92);
+      border: 1px solid rgba(123, 97, 255, 0.5);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      white-space: nowrap;
+    }
+    .copy-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
     }
     .text-link {
       color: var(--muted);
@@ -196,7 +250,100 @@
       border: 1px solid var(--line);
       display: grid;
       gap: 12px;
+      overflow: hidden;
       transition: transform 0.2s ease, border 0.2s ease, box-shadow 0.2s ease;
+    }
+    .timeline-item::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      padding: 1px;
+      background: conic-gradient(
+        from var(--beam-angle, 0deg),
+        rgba(190, 168, 255, 0.0) 0deg,
+        rgba(190, 168, 255, 0.0) 310deg,
+        rgba(190, 168, 255, 0.6) 336deg,
+        rgba(190, 168, 255, 0.0) 360deg
+      );
+      -webkit-mask:
+        linear-gradient(#000 0 0) content-box,
+        linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+      mask-composite: exclude;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+      z-index: 0;
+      animation: border-beam 12s linear infinite;
+      animation-play-state: paused;
+    }
+    .timeline-item:hover::after {
+      opacity: 0.75;
+      animation-play-state: running;
+    }
+    .timeline-item > * {
+      position: relative;
+      z-index: 1;
+    }
+    .wave-particles {
+      position: absolute;
+      inset: 0;
+      border-radius: 14px;
+      overflow: hidden;
+      pointer-events: none;
+      opacity: 0;
+      z-index: 0;
+      transition: opacity 0.2s ease;
+    }
+    .hover-reveal.is-waving .wave-particles {
+      opacity: 1;
+    }
+    .hover-reveal:hover .wave-particles {
+      opacity: 1;
+    }
+    .wave-particles span {
+      position: absolute;
+      width: var(--size, 2.2px);
+      height: var(--size, 2.2px);
+      border-radius: 999px;
+      background: rgba(190, 168, 255, 0.82);
+      box-shadow: 0 0 12px rgba(190, 168, 255, 0.65),
+        0 0 18px rgba(123, 97, 255, 0.45);
+      opacity: 0;
+      transform: translate(0, 8px) scale(0.6);
+      animation: wave-float var(--duration, 1200ms) ease-in-out infinite;
+      animation-delay: var(--delay, 0ms);
+      animation-play-state: paused;
+    }
+    .hover-reveal.is-waving .wave-particles span {
+      animation-play-state: running;
+    }
+    .hover-reveal:hover .wave-particles span {
+      animation-play-state: running;
+    }
+    @keyframes wave-float {
+      0% {
+        opacity: 0;
+        transform: translate(0, 8px) scale(0.6);
+      }
+      30% {
+        opacity: 0.7;
+      }
+      100% {
+        opacity: 0;
+        transform: translate(var(--drift, 8px), -24px) scale(1);
+      }
+    }
+    @property --beam-angle {
+      syntax: "<angle>";
+      inherits: false;
+      initial-value: 0deg;
+    }
+    @keyframes border-beam {
+      to {
+        --beam-angle: 360deg;
+      }
     }
     .timeline-item::before {
       content: "";
@@ -332,33 +479,34 @@
     <header>
       <h1 class="reveal-name">Ramesh Basnet</h1>
       <p class="subtitle">
-        A concise record of experience, education, community work, and research.
+        <span class="scramble-text" data-scramble-text="A concise record of experience, education, community work, and research.">A concise record of experience, education, community work, and research.</span>
       </p>
       <div class="links">
         <a class="link-btn" href="https://www.linkedin.com/in/basnetr/" target="_blank" rel="noopener noreferrer">
           <svg class="link-icon" viewBox="0 0 24 24" aria-hidden="true">
             <path fill="currentColor" d="M4.98 3.5A2.5 2.5 0 1 0 5 8.5a2.5 2.5 0 0 0-.02-5ZM3 9h4v12H3V9Zm7 0h3.82v1.64h.05c.53-.96 1.82-1.98 3.75-1.98 4 0 4.74 2.63 4.74 6.05V21h-4v-5.3c0-1.26-.02-2.89-1.76-2.89-1.77 0-2.04 1.38-2.04 2.8V21h-4V9Z"/>
           </svg>
-          LinkedIn Profile
+          <span class="scramble-text" data-scramble-text="LinkedIn Profile">LinkedIn Profile</span>
         </a>
         <a class="link-btn" href="http://github.com/basnetr" target="_blank" rel="noopener noreferrer">
           <svg class="link-icon" viewBox="0 0 24 24" aria-hidden="true">
             <path fill="currentColor" d="M12 2C6.48 2 2 6.59 2 12.25c0 4.52 2.87 8.35 6.84 9.71.5.1.68-.22.68-.48 0-.24-.01-.88-.01-1.73-2.78.62-3.37-1.38-3.37-1.38-.45-1.2-1.11-1.52-1.11-1.52-.9-.64.07-.63.07-.63 1 .07 1.53 1.06 1.53 1.06.9 1.56 2.36 1.11 2.94.85.09-.66.35-1.11.63-1.36-2.22-.26-4.56-1.14-4.56-5.09 0-1.13.39-2.05 1.03-2.77-.1-.26-.45-1.33.1-2.76 0 0 .84-.27 2.75 1.05a9.3 9.3 0 0 1 5 0c1.9-1.32 2.74-1.05 2.74-1.05.55 1.43.2 2.5.1 2.76.64.72 1.02 1.64 1.02 2.77 0 3.96-2.34 4.83-4.58 5.08.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.6.69.48A10.25 10.25 0 0 0 22 12.25C22 6.59 17.52 2 12 2Z"/>
           </svg>
-          GitHub
+          <span class="scramble-text" data-scramble-text="GitHub">GitHub</span>
         </a>
-        <a class="link-btn" href="mailto:rameshbasnet@proton.me">
+        <a class="link-btn copy-email" href="mailto:rameshbasnet@proton.me" data-email="rameshbasnet@proton.me">
           <svg class="link-icon" viewBox="0 0 24 24" aria-hidden="true">
             <path fill="currentColor" d="M4 5h16a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Zm0 2v.4l8 5.2 8-5.2V7H4Zm16 10V9.6l-7.46 4.85a1 1 0 0 1-1.08 0L4 9.6V17h16Z"/>
           </svg>
-          rameshbasnet@proton.me
+          <span class="scramble-text" data-scramble-text="rameshbasnet@proton.me">rameshbasnet@proton.me</span>
+          <span class="copy-toast" aria-live="polite">Copied!</span>
         </a>
       </div>
     </header>
 
     <section class="section" aria-label="Experience">
       <div class="section-head">
-        <h2 class="section-title">Experience</h2>
+        <h2 class="section-title"><span class="scramble-text" data-scramble-text="Experience">Experience</span></h2>
         <button class="section-toggle" type="button" aria-label="Expand section" aria-pressed="false">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path class="toggle-horizontal" d="M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -503,7 +651,7 @@
 
     <section class="section" aria-label="Education">
       <div class="section-head">
-        <h2 class="section-title">Education</h2>
+        <h2 class="section-title"><span class="scramble-text" data-scramble-text="Education">Education</span></h2>
         <button class="section-toggle" type="button" aria-label="Expand section" aria-pressed="false">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path class="toggle-horizontal" d="M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -552,7 +700,7 @@
 
     <section class="section" aria-label="Volunteering">
       <div class="section-head">
-        <h2 class="section-title">Volunteering</h2>
+        <h2 class="section-title"><span class="scramble-text" data-scramble-text="Volunteering">Volunteering</span></h2>
         <button class="section-toggle" type="button" aria-label="Expand section" aria-pressed="false">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path class="toggle-horizontal" d="M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -608,7 +756,7 @@
 
     <section class="section" aria-label="Publications">
       <div class="section-head">
-        <h2 class="section-title">Publications</h2>
+        <h2 class="section-title"><span class="scramble-text" data-scramble-text="Publications">Publications</span></h2>
         <button class="section-toggle" type="button" aria-label="Expand section" aria-pressed="false">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path class="toggle-horizontal" d="M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -621,7 +769,7 @@
           <svg class="link-icon" viewBox="0 0 24 24" aria-hidden="true">
             <path fill="currentColor" d="M4.98 3.5A2.5 2.5 0 1 0 5 8.5a2.5 2.5 0 0 0-.02-5ZM3 9h4v12H3V9Zm7 0h3.82v1.64h.05c.53-.96 1.82-1.98 3.75-1.98 4 0 4.74 2.63 4.74 6.05V21h-4v-5.3c0-1.26-.02-2.89-1.76-2.89-1.77 0-2.04 1.38-2.04 2.8V21h-4V9Z"/>
           </svg>
-          View all on LinkedIn
+          <span class="scramble-text" data-scramble-text="View all on LinkedIn">View all on LinkedIn</span>
         </a>
       </div>
       <div class="timeline">
@@ -806,15 +954,50 @@
 
     renderDurations();
 
+    function ensureWaveParticles(card) {
+      if (card.querySelector(".wave-particles")) return;
+      const wave = document.createElement("div");
+      wave.className = "wave-particles";
+      const particleCount = 34;
+      for (let i = 0; i < particleCount; i += 1) {
+        const dot = document.createElement("span");
+        const size = (Math.random() * 1.2 + 0.9).toFixed(2);
+        const t = i / particleCount;
+        const helixCenter = 50;
+        const helixAmp = 22;
+        const phase = (i % 2 === 0 ? 0 : Math.PI);
+        const scatterX = (Math.random() * 6 - 3);
+        const scatterY = (Math.random() * 6 - 3);
+        const left = (helixCenter + Math.sin(t * Math.PI * 4 + phase) * helixAmp + scatterX).toFixed(2);
+        const top = (20 + t * 70 + scatterY).toFixed(2);
+        const drift = (Math.random() * 20 - 10).toFixed(2);
+        const duration = Math.floor(Math.random() * 500 + 900);
+        const delay = Math.floor(Math.random() * 500);
+        dot.style.setProperty("--size", `${size}px`);
+        dot.style.setProperty("left", `${left}%`);
+        dot.style.setProperty("top", `${top}%`);
+        dot.style.setProperty("--drift", `${drift}px`);
+        dot.style.setProperty("--duration", `${duration}ms`);
+        dot.style.setProperty("--delay", `${delay}ms`);
+        wave.appendChild(dot);
+      }
+      card.appendChild(wave);
+    }
+
     document.querySelectorAll(".hover-reveal").forEach((card) => {
+      ensureWaveParticles(card);
       card.addEventListener("click", (event) => {
         if (event.target.closest("a")) return;
         const isOpen = card.classList.contains("is-open");
         card.classList.toggle("is-open", !isOpen);
         card.classList.toggle("is-closed", isOpen);
       });
+      card.addEventListener("mouseenter", () => {
+        card.classList.add("is-waving");
+      });
       card.addEventListener("mouseleave", () => {
         card.classList.remove("is-closed");
+        card.classList.remove("is-waving");
       });
     });
 
@@ -832,6 +1015,111 @@
         toggle.setAttribute("aria-pressed", String(!allOpen));
       });
     });
+
+    function createScrambler(targetEl, triggerEl, options = {}) {
+      if (!targetEl || !triggerEl) return;
+      const originalText = (options.text || targetEl.textContent || "").trim();
+      const scrambleChars = options.chars || "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!<>-_\\/[]{}=+*^?#";
+      const scrambleDuration = options.duration ?? 250;
+      const scrambleStep = options.step ?? 50;
+      let scrambleFrameId = null;
+      let scrambleStart = 0;
+      let scrambleLastUpdate = 0;
+
+
+      function renderScramble(progress) {
+        const nextText = originalText
+          .split("")
+          .map((char) => {
+            if (char === " ") return " ";
+            if (progress >= 1) return char;
+            const randIndex = Math.floor(Math.random() * scrambleChars.length);
+            return scrambleChars[randIndex];
+          })
+          .join("");
+        targetEl.textContent = nextText;
+      }
+
+      function animateScramble(time) {
+        if (!scrambleStart) scrambleStart = time;
+        const progress = Math.min((time - scrambleStart) / scrambleDuration, 1);
+        if (!scrambleLastUpdate || time - scrambleLastUpdate >= scrambleStep || progress >= 1) {
+          renderScramble(progress);
+          scrambleLastUpdate = time;
+        }
+        if (progress < 1) {
+          scrambleFrameId = requestAnimationFrame(animateScramble);
+        } else {
+          scrambleFrameId = null;
+          targetEl.textContent = originalText;
+        }
+      }
+
+      function startScramble() {
+        if (scrambleFrameId) cancelAnimationFrame(scrambleFrameId);
+        scrambleStart = 0;
+        scrambleLastUpdate = 0;
+        scrambleFrameId = requestAnimationFrame(animateScramble);
+      }
+
+      function stopScramble() {
+        if (scrambleFrameId) cancelAnimationFrame(scrambleFrameId);
+        scrambleFrameId = null;
+        targetEl.textContent = originalText;
+      }
+
+      triggerEl.addEventListener("mouseenter", startScramble);
+      triggerEl.addEventListener("mouseleave", stopScramble);
+    }
+
+    const nameEl = document.querySelector(".reveal-name");
+    if (nameEl) {
+      createScrambler(nameEl, nameEl);
+      nameEl.addEventListener("mouseenter", () => {
+        nameEl.classList.add("is-unmasked");
+      });
+    }
+
+    document.querySelectorAll(".scramble-text").forEach((textEl) => {
+      const trigger = textEl.closest("a") || textEl;
+      createScrambler(textEl, trigger, { text: textEl.dataset.scrambleText || textEl.textContent });
+    });
+
+    const emailLink = document.querySelector(".copy-email");
+    if (emailLink) {
+      const toast = emailLink.querySelector(".copy-toast");
+      const emailValue = emailLink.dataset.email;
+      let toastTimer = null;
+
+      function showToast() {
+        if (!toast) return;
+        toast.classList.add("show");
+        if (toastTimer) clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => toast.classList.remove("show"), 1200);
+      }
+
+      async function copyEmail(event) {
+        event.preventDefault();
+        if (!emailValue) return;
+        try {
+          await navigator.clipboard.writeText(emailValue);
+          showToast();
+        } catch (err) {
+          const temp = document.createElement("textarea");
+          temp.value = emailValue;
+          temp.setAttribute("readonly", "");
+          temp.style.position = "absolute";
+          temp.style.left = "-9999px";
+          document.body.appendChild(temp);
+          temp.select();
+          document.execCommand("copy");
+          document.body.removeChild(temp);
+          showToast();
+        }
+      }
+
+      emailLink.addEventListener("click", copyEmail);
+    }
   </script>
 </body>
 </html>
