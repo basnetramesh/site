@@ -1,0 +1,716 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Unicode → Preeti Converter</title>
+
+  <style>
+    /* ---------- Theme tokens ---------- */
+    :root{
+      --bg: #0b1220;
+      --text: #e7eefc;
+      --muted: rgba(231,238,252,0.78);
+      --card: rgba(255,255,255,0.06);
+      --border: rgba(255,255,255,0.12);
+      --field: rgba(0,0,0,0.22);
+      --btn: rgba(255,255,255,0.10);
+      --btnHover: rgba(255,255,255,0.14);
+      --focus: rgba(120,160,255,0.55);
+      --shadow: 0 10px 30px rgba(0,0,0,0.25);
+      --radius: 16px;
+      --radiusSm: 12px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      color-scheme: dark;
+    }
+
+    /* Light mode overrides */
+    [data-theme="light"]{
+      --bg: #f6f7fb;
+      --text: #0c1220;
+      --muted: rgba(12,18,32,0.72);
+      --card: rgba(255,255,255,0.92);
+      --border: rgba(12,18,32,0.12);
+      --field: rgba(12,18,32,0.05);
+      --btn: rgba(12,18,32,0.06);
+      --btnHover: rgba(12,18,32,0.10);
+      --focus: rgba(0,90,255,0.35);
+      --shadow: 0 10px 25px rgba(12,18,32,0.08);
+      color-scheme: light;
+    }
+
+    /* Respect system preference by default (unless user toggles) */
+    @media (prefers-color-scheme: light){
+      :root:not([data-theme]){
+        --bg: #f6f7fb;
+        --text: #0c1220;
+        --muted: rgba(12,18,32,0.72);
+        --card: rgba(255,255,255,0.92);
+        --border: rgba(12,18,32,0.12);
+        --field: rgba(12,18,32,0.05);
+        --btn: rgba(12,18,32,0.06);
+        --btnHover: rgba(12,18,32,0.10);
+        --focus: rgba(0,90,255,0.35);
+        --shadow: 0 10px 25px rgba(12,18,32,0.08);
+        color-scheme: light;
+      }
+    }
+
+    /* ---------- Layout fixes (prevents overflow/overlap) ---------- */
+    *, *::before, *::after { box-sizing: border-box; }
+
+    body{
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    .wrap{
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px 14px 34px;
+    }
+
+    .card{
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(8px);
+    }
+
+    .topbar{
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+
+    h1{
+      font-size: 18px;
+      margin: 0 0 6px;
+      letter-spacing: 0.2px;
+    }
+
+    .sub{
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 13px;
+    }
+
+    .actions{
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .pill{
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--btn);
+      font-size: 12px;
+      color: var(--text);
+      user-select: none;
+    }
+
+    .toggle{
+      appearance: none;
+      width: 42px;
+      height: 24px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.18);
+      border: 1px solid var(--border);
+      position: relative;
+      cursor: pointer;
+      outline: none;
+      flex: 0 0 auto;
+    }
+    [data-theme="light"] .toggle{ background: rgba(12,18,32,0.12); }
+
+    .toggle::after{
+      content: "";
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: var(--text);
+      position: absolute;
+      top: 50%;
+      left: 3px;
+      transform: translateY(-50%);
+      transition: left 160ms ease;
+    }
+    .toggle:checked::after{ left: 21px; }
+
+    .grid{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 14px;
+    }
+
+    /* IMPORTANT: prevents textareas from overflowing grid columns */
+    .col{ min-width: 0; }
+
+    @media (max-width: 900px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    label{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      margin: 4px 0 8px;
+    }
+
+    .counter{
+      font-size: 11px;
+      opacity: 0.85;
+      font-family: var(--mono);
+    }
+
+    textarea{
+      width: 100%;
+      min-height: 280px;
+      max-width: 100%;
+      resize: vertical;
+      border-radius: var(--radiusSm);
+      border: 1px solid var(--border);
+      background: var(--field);
+      color: var(--text);
+      padding: 12px;
+      line-height: 1.55;
+      font-size: 14px;
+      outline: none;
+      overflow: auto;
+      display: block;
+      word-break: break-word;
+    }
+
+    #p{ font-family: var(--mono); }
+
+    textarea:focus{
+      border-color: var(--focus);
+      box-shadow: 0 0 0 4px rgba(120,160,255,0.15);
+    }
+
+    .row{
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .rowLeft, .rowRight{
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    button{
+      border: 1px solid var(--border);
+      background: var(--btn);
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 650;
+      font-size: 13px;
+    }
+    button:hover{ background: var(--btnHover); }
+
+    .ghost{ background: transparent; }
+
+    .hint{
+      margin-top: 10px;
+      font-size: 12px;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      box-shadow: var(--shadow);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 160ms ease, transform 160ms ease;
+      font-size: 12px;
+    }
+    .toast.show{
+      opacity: 1;
+      transform: translateX(-50%) translateY(-4px);
+    }
+
+    /* ---------- Line-by-line panel ---------- */
+    .linePanel{
+      margin-top: 14px;
+      border-top: 1px solid var(--border);
+      padding-top: 14px;
+      display: none;
+    }
+    .linePanel.show{ display: block; }
+
+    .linePanelHeader{
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 10px;
+    }
+    .linePanelHeader .title{
+      font-size: 13px;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .pairs{
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .pair{
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--field);
+      padding: 10px;
+    }
+
+    .lineRow{
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .lineText{
+      min-width: 0;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 10px;
+      background: rgba(255,255,255,0.03);
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-size: 13px;
+      line-height: 1.45;
+    }
+    [data-theme="light"] .lineText{ background: rgba(12,18,32,0.03); }
+
+    .lineText.preeti{ font-family: var(--mono); }
+
+    .miniBtn{
+      padding: 8px 10px;
+      border-radius: 10px;
+      font-size: 12px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .divider{
+      height: 10px;
+    }
+
+    @media (max-width: 520px){
+      .lineRow{
+        grid-template-columns: 1fr;
+      }
+      .miniBtn{
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div class="topbar">
+        <div>
+          <h1>Unicode → Preeti Converter</h1>
+          <p class="sub">
+            Paste Nepali Unicode on the left. Output Preeti typing appears on the right.
+            Copy the right text and set font to <b>Preeti</b>.
+          </p>
+        </div>
+
+        <div class="actions">
+          <div class="pill" title="Toggle light/dark mode">
+            <span id="themeLabel">Dark</span>
+            <input id="themeToggle" class="toggle" type="checkbox" aria-label="Toggle theme">
+          </div>
+        </div>
+      </div>
+
+      <div class="grid">
+        <div class="col">
+          <label for="u">
+            <span>Nepali Unicode (Devanagari)</span>
+            <span class="counter"><span id="uCount">0</span> chars</span>
+          </label>
+          <textarea id="u" placeholder="Paste Nepali Unicode here..."></textarea>
+        </div>
+
+        <div class="col">
+          <label for="p">
+            <span>Preeti typing (copy this)</span>
+            <span class="counter"><span id="pCount">0</span> chars</span>
+          </label>
+          <textarea id="p" placeholder="Preeti output will appear here..." readonly></textarea>
+        </div>
+      </div>
+
+      <div class="row">
+        <div class="rowLeft">
+          <button id="copyBtn">Copy Preeti Output</button>
+          <button id="copyUnicodeBtn" class="ghost">Copy Unicode</button>
+        </div>
+        <div class="rowRight">
+          <button id="lineBtn" class="ghost">Line By Line Display</button>
+          <button id="clearBtn">Clear</button>
+        </div>
+      </div>
+
+      <!-- Line-by-line display -->
+      <div id="linePanel" class="linePanel" aria-live="polite">
+        <div class="linePanelHeader">
+          <p class="title">Line-by-line conversion (Unicode + Preeti). Use the copy buttons on the right.</p>
+          <button id="copyAllPairsBtn" class="ghost">Copy All (Pairs)</button>
+        </div>
+        <div id="pairs" class="pairs"></div>
+      </div>
+
+      <div class="hint">
+        
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast">Copied!</div>
+
+<script>
+  /* ---------------- THEME (light/dark) ---------------- */
+  const root = document.documentElement;
+  const themeToggle = document.getElementById("themeToggle");
+  const themeLabel = document.getElementById("themeLabel");
+
+  function setTheme(mode){
+    if (!mode){
+      root.removeAttribute("data-theme");
+      localStorage.removeItem("theme");
+      return;
+    }
+    root.setAttribute("data-theme", mode);
+    localStorage.setItem("theme", mode);
+  }
+
+  function syncThemeUI(){
+    const mode = root.getAttribute("data-theme");
+    let effective = mode;
+    if (!effective){
+      effective = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+    }
+    themeToggle.checked = (effective === "light");
+    themeLabel.textContent = effective === "light" ? "Light" : "Dark";
+  }
+
+  const savedTheme = localStorage.getItem("theme");
+  if (savedTheme === "light" || savedTheme === "dark") setTheme(savedTheme);
+  syncThemeUI();
+
+  themeToggle.addEventListener("change", () => {
+    setTheme(themeToggle.checked ? "light" : "dark");
+    syncThemeUI();
+  });
+
+  window.matchMedia("(prefers-color-scheme: light)").addEventListener("change", () => {
+    if (!localStorage.getItem("theme")) syncThemeUI();
+  });
+
+  /* ---------------- CONVERTER (your exact logic) ---------------- */
+  const VOWELS = {
+    "अ":"c","आ":"cf","इ":"O","ई":"O{","उ":"p","ऊ":"pm",
+    "ए":"P","ऐ":"P]","ओ":"cf]","औ":"cf}","ऋ":"c["
+  };
+
+  const MATRAS = {
+    "ा":"f","ी":"L","ु":"'","ू":"\"","े":"]","ै":"}","ो":"f]","ौ":"f}","ृ":"[",
+    "ं":"+","ँ":"F","ः":":"
+  };
+
+  const CONS = {
+    "क":"s","ख":"v","ग":"u","घ":"3","ङ":"ª",
+    "च":"r","छ":"5","ज":"h","झ":"´","ञ":"`",
+    "ट":"6","ठ":"7","ड":"8","ढ":"9","ण":"0f",
+    "त":"t","थ":"y","द":"b","ध":"w","न":"g",
+    "प":"k","फ":"km","ब":"a","भ":"e","म":"d",
+    "य":"o","र":"/","ल":"n","व":"j",
+    "श":"z","ष":"if","स":";","ह":"x"
+  };
+
+  const SIGNS = {
+    "्":"\\","।":".","॥":"..",
+    "—":"—","–":"–",",":",",".":".","?":"?","!":"!",
+    "(": "(", ")": ")", "“":"“","”":"”","‘":"‘","’":"’",
+    "\n":"\n","\t":"\t"," ":" "
+  };
+
+  const DIGITS = {"०":"0","१":"1","२":"2","३":"3","४":"4","५":"5","६":"6","७":"7","८":"8","९":"9"};
+
+  const CHAR_MAP = Object.assign({}, VOWELS, CONS, SIGNS, DIGITS, {
+    "ं": MATRAS["ं"], "ँ": MATRAS["ँ"], "ः": MATRAS["ः"]
+  });
+
+  const PREETI_I = "l";
+
+  const CLUSTERS = [
+    ["क्ष","If"],
+    ["त्र","q"],
+    ["ज्ञ","1"],
+    ["श्र",">"],
+    ["द्ध","4"],
+    ["प्र","k|"],
+    ["ज्य","Ho"],
+    ["ध्य","Wo"],
+    ["ख्य","Vo"],
+    ["त्य","To"],
+    ["रू","¿"]
+  ];
+
+  const HALF_FORMS = {
+    "स्": ":",
+    "न्": "G",
+    "म्": "D",
+    "ग्": "U",
+    "श्": "Z"
+  };
+
+  function isConsonant(ch) { return CONS[ch] !== undefined; }
+  function mapConsonant(ch) { return CONS[ch] !== undefined ? CONS[ch] : ch; }
+
+  function unicodeToPreeti(text) {
+    let out = [];
+    let i = 0;
+
+    while (i < text.length) {
+      let matched = false;
+      for (const [src, dst] of CLUSTERS) {
+        if (text.startsWith(src, i)) {
+          out.push(dst);
+          i += src.length;
+          matched = true;
+          break;
+        }
+      }
+      if (matched) continue;
+
+      if (text[i] === "र" && text[i+1] === "्" && isConsonant(text[i+2] || "")) {
+        const c = text[i+2];
+        const cm = mapConsonant(c);
+        if (text[i+3] === "ि") {
+          out.push(PREETI_I + cm + "{");
+          i += 4;
+        } else {
+          out.push(cm + "{");
+          i += 3;
+        }
+        continue;
+      }
+
+      if (isConsonant(text[i]) && text[i+1] === "्" && text[i+2] === "र") {
+        out.push(mapConsonant(text[i]) + "|");
+        i += 3;
+        continue;
+      }
+
+      const two = text.slice(i, i+2);
+      if (HALF_FORMS[two] !== undefined) {
+        out.push(HALF_FORMS[two]);
+        i += 2;
+        continue;
+      }
+
+      if (isConsonant(text[i]) && text[i+1] === "ि") {
+        out.push(PREETI_I + mapConsonant(text[i]));
+        i += 2;
+        continue;
+      }
+
+      const ch = text[i];
+      if (MATRAS[ch] !== undefined) {
+        out.push(MATRAS[ch]);
+        i += 1;
+        continue;
+      }
+
+      out.push(CHAR_MAP[ch] !== undefined ? CHAR_MAP[ch] : ch);
+      i += 1;
+    }
+
+    return out.join("");
+  }
+
+  /* ---------------- UI WIRING ---------------- */
+  const u = document.getElementById("u");
+  const p = document.getElementById("p");
+  const uCount = document.getElementById("uCount");
+  const pCount = document.getElementById("pCount");
+  const toast = document.getElementById("toast");
+
+  const lineBtn = document.getElementById("lineBtn");
+  const linePanel = document.getElementById("linePanel");
+  const pairsEl = document.getElementById("pairs");
+  const copyAllPairsBtn = document.getElementById("copyAllPairsBtn");
+  let linePanelOpen = false;
+
+  function showToast(msg){
+    toast.textContent = msg;
+    toast.classList.add("show");
+    clearTimeout(showToast._t);
+    showToast._t = setTimeout(() => toast.classList.remove("show"), 900);
+  }
+
+  async function copyText(text, msg){
+    try {
+      await navigator.clipboard.writeText(text);
+      showToast(msg || "Copied!");
+    } catch (e) {
+      const temp = document.createElement("textarea");
+      temp.value = text;
+      document.body.appendChild(temp);
+      temp.select();
+      document.execCommand("copy");
+      document.body.removeChild(temp);
+      showToast(msg || "Copied!");
+    }
+  }
+
+  function renderLineByLine(){
+    const lines = u.value.split(/\r?\n/);
+    pairsEl.innerHTML = "";
+
+    const frag = document.createDocumentFragment();
+
+    lines.forEach((line, idx) => {
+      const preetiLine = unicodeToPreeti(line);
+
+      const pair = document.createElement("div");
+      pair.className = "pair";
+
+      // Unicode row
+      const rowU = document.createElement("div");
+      rowU.className = "lineRow";
+
+      const txtU = document.createElement("div");
+      txtU.className = "lineText";
+      txtU.textContent = line;
+
+      const btnU = document.createElement("button");
+      btnU.className = "miniBtn";
+      btnU.type = "button";
+      btnU.textContent = "⧉ Copy";
+      btnU.addEventListener("click", () => copyText(line, `Unicode line ${idx+1} copied`));
+
+      rowU.appendChild(txtU);
+      rowU.appendChild(btnU);
+
+      // Spacer
+      const divider = document.createElement("div");
+      divider.className = "divider";
+
+      // Preeti row
+      const rowP = document.createElement("div");
+      rowP.className = "lineRow";
+
+      const txtP = document.createElement("div");
+      txtP.className = "lineText preeti";
+      txtP.textContent = preetiLine;
+
+      const btnP = document.createElement("button");
+      btnP.className = "miniBtn";
+      btnP.type = "button";
+      btnP.textContent = "⧉ Copy";
+      btnP.addEventListener("click", () => copyText(preetiLine, `Preeti line ${idx+1} copied`));
+
+      rowP.appendChild(txtP);
+      rowP.appendChild(btnP);
+
+      pair.appendChild(rowU);
+      pair.appendChild(divider);
+      pair.appendChild(rowP);
+
+      frag.appendChild(pair);
+    });
+
+    pairsEl.appendChild(frag);
+  }
+
+  function update() {
+    const preeti = unicodeToPreeti(u.value);
+    p.value = preeti;
+    uCount.textContent = String(u.value.length);
+    pCount.textContent = String(preeti.length);
+
+    if (linePanelOpen) renderLineByLine();
+  }
+  u.addEventListener("input", update);
+
+  document.getElementById("copyBtn").addEventListener("click", () => copyText(p.value, "Preeti copied"));
+  document.getElementById("copyUnicodeBtn").addEventListener("click", () => copyText(u.value, "Unicode copied"));
+
+  document.getElementById("clearBtn").addEventListener("click", () => {
+    u.value = "";
+    p.value = "";
+    update();
+    u.focus();
+  });
+
+  lineBtn.addEventListener("click", () => {
+    linePanelOpen = !linePanelOpen;
+    linePanel.classList.toggle("show", linePanelOpen);
+    lineBtn.textContent = linePanelOpen ? "Hide Line By Line" : "Line By Line Display";
+    if (linePanelOpen) {
+      renderLineByLine();
+      showToast("Line-by-line opened");
+    }
+  });
+
+  copyAllPairsBtn.addEventListener("click", () => {
+    const lines = u.value.split(/\r?\n/);
+    const out = [];
+    lines.forEach((line) => {
+      out.push(line);
+      out.push(unicodeToPreeti(line));
+      out.push(""); // blank line between pairs
+    });
+    copyText(out.join("\n"), "All pairs copied");
+  });
+
+  update();
+</script>
+</body>
+</html>
