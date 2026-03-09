@@ -1,0 +1,652 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>English Phonetic → Nepali Unicode Converter</title>
+
+    <style>
+        :root {
+            --bg: #0b1220;
+            --text: #e7eefc;
+            --muted: rgba(231, 238, 252, 0.78);
+            --card: rgba(255, 255, 255, 0.06);
+            --border: rgba(255, 255, 255, 0.12);
+            --field: rgba(0, 0, 0, 0.22);
+            --btn: rgba(255, 255, 255, 0.10);
+            --btnHover: rgba(255, 255, 255, 0.14);
+            --focus: rgba(120, 160, 255, 0.55);
+            --shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+            --radius: 16px;
+            --radiusSm: 12px;
+            --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+            font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+            color-scheme: dark;
+        }
+
+        [data-theme="light"] {
+            --bg: #f6f7fb;
+            --text: #0c1220;
+            --muted: rgba(12, 18, 32, 0.72);
+            --card: rgba(255, 255, 255, 0.92);
+            --border: rgba(12, 18, 32, 0.12);
+            --field: rgba(12, 18, 32, 0.05);
+            --btn: rgba(12, 18, 32, 0.06);
+            --btnHover: rgba(12, 18, 32, 0.10);
+            --focus: rgba(0, 90, 255, 0.35);
+            --shadow: 0 10px 25px rgba(12, 18, 32, 0.08);
+            color-scheme: light;
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root:not([data-theme]) {
+                --bg: #f6f7fb;
+                --text: #0c1220;
+                --muted: rgba(12, 18, 32, 0.72);
+                --card: rgba(255, 255, 255, 0.92);
+                --border: rgba(12, 18, 32, 0.12);
+                --field: rgba(12, 18, 32, 0.05);
+                --btn: rgba(12, 18, 32, 0.06);
+                --btnHover: rgba(12, 18, 32, 0.10);
+                --focus: rgba(0, 90, 255, 0.35);
+                --shadow: 0 10px 25px rgba(12, 18, 32, 0.08);
+                color-scheme: light;
+            }
+        }
+
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+        }
+
+        .wrap {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 20px 14px 34px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px;
+            box-shadow: var(--shadow);
+            backdrop-filter: blur(8px);
+        }
+
+        .topbar {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            font-size: 18px;
+            margin: 0 0 6px;
+            letter-spacing: 0.2px;
+        }
+
+        .sub {
+            margin: 0;
+            color: var(--muted);
+            line-height: 1.45;
+            font-size: 13px;
+        }
+
+        .actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 10px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--btn);
+            font-size: 12px;
+            color: var(--text);
+            user-select: none;
+        }
+
+        .toggle {
+            appearance: none;
+            width: 42px;
+            height: 24px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.18);
+            border: 1px solid var(--border);
+            position: relative;
+            cursor: pointer;
+            outline: none;
+            flex: 0 0 auto;
+        }
+
+        [data-theme="light"] .toggle {
+            background: rgba(12, 18, 32, 0.12);
+        }
+
+        .toggle::after {
+            content: "";
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--text);
+            position: absolute;
+            top: 50%;
+            left: 3px;
+            transform: translateY(-50%);
+            transition: left 160ms ease;
+        }
+
+        .toggle:checked::after {
+            left: 21px;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        .col {
+            min-width: 0;
+        }
+
+        @media (max-width: 900px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            font-size: 12px;
+            color: var(--muted);
+            margin: 4px 0 8px;
+        }
+
+        .counter {
+            font-size: 11px;
+            opacity: 0.85;
+            font-family: var(--mono);
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 280px;
+            max-width: 100%;
+            resize: vertical;
+            border-radius: var(--radiusSm);
+            border: 1px solid var(--border);
+            background: var(--field);
+            color: var(--text);
+            padding: 12px;
+            line-height: 1.55;
+            font-size: 14px;
+            outline: none;
+            overflow: auto;
+            display: block;
+            word-break: break-word;
+        }
+
+        #r {
+            font-family: var(--mono);
+        }
+
+        #n {
+            font-family: "Noto Sans Devanagari", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        }
+
+        textarea:focus {
+            border-color: var(--focus);
+            box-shadow: 0 0 0 4px rgba(120, 160, 255, 0.15);
+        }
+
+        .row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .rowLeft,
+        .rowRight {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        button {
+            border: 1px solid var(--border);
+            background: var(--btn);
+            color: var(--text);
+            padding: 10px 12px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 650;
+            font-size: 13px;
+        }
+
+        button:hover {
+            background: var(--btnHover);
+        }
+
+        .ghost {
+            background: transparent;
+        }
+
+        .hint {
+            margin-top: 10px;
+            font-size: 12px;
+            color: var(--muted);
+            line-height: 1.4;
+        }
+
+        .toast {
+            position: fixed;
+            left: 50%;
+            bottom: 18px;
+            transform: translateX(-50%);
+            padding: 10px 12px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--card);
+            color: var(--text);
+            box-shadow: var(--shadow);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 160ms ease, transform 160ms ease;
+            font-size: 12px;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(-4px);
+        }
+
+        .linePanel {
+            margin-top: 14px;
+            border-top: 1px solid var(--border);
+            padding-top: 14px;
+            display: none;
+        }
+
+        .linePanel.show {
+            display: block;
+        }
+
+        .linePanelHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 10px;
+        }
+
+        .linePanelHeader .title {
+            font-size: 13px;
+            color: var(--muted);
+            margin: 0;
+        }
+
+        .pairs {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .pair {
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            background: var(--field);
+            padding: 10px;
+        }
+
+        .lineRow {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            gap: 10px;
+            align-items: start;
+        }
+
+        .lineText {
+            min-width: 0;
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 8px 10px;
+            background: rgba(255, 255, 255, 0.03);
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: 13px;
+            line-height: 1.45;
+        }
+
+        [data-theme="light"] .lineText {
+            background: rgba(12, 18, 32, 0.03);
+        }
+
+        .lineText.unicode {
+            font-family: "Noto Sans Devanagari", system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+        }
+
+        .miniBtn {
+            padding: 8px 10px;
+            border-radius: 10px;
+            font-size: 12px;
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        .divider {
+            height: 10px;
+        }
+
+        @media (max-width: 520px) {
+            .lineRow {
+                grid-template-columns: 1fr;
+            }
+
+            .miniBtn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="wrap">
+        <div class="card">
+            <div class="topbar">
+                <div>
+                    <h1>English Phonetic → Nepali Unicode Converter</h1>
+                    <p class="sub">
+                        Type Romanized Nepali on the left. Proper Nepali Unicode appears on the right.
+                    </p>
+                </div>
+
+                <div class="actions">
+                    <div class="pill" title="Toggle light/dark mode">
+                        <span id="themeLabel">Dark</span>
+                        <input id="themeToggle" class="toggle" type="checkbox" aria-label="Toggle theme">
+                    </div>
+                </div>
+            </div>
+
+            <div class="grid">
+                <div class="col">
+                    <label for="r">
+                        <span>English phonetic / Romanized Nepali</span>
+                        <span class="counter"><span id="rCount">0</span> chars</span>
+                    </label>
+                    <textarea id="r" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+                        placeholder="Type Romanized Nepali here..."></textarea>
+                </div>
+
+                <div class="col">
+                    <label for="n">
+                        <span>Nepali Unicode output</span>
+                        <span class="counter"><span id="nCount">0</span> chars</span>
+                    </label>
+                    <textarea id="n" placeholder="Unicode output will appear here..." readonly></textarea>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="rowLeft">
+                    <button id="copyBtn">Copy Unicode Output</button>
+                    <button id="copyInputBtn" class="ghost">Copy Romanized Input</button>
+                </div>
+                <div class="rowRight">
+                    <button id="lineBtn" class="ghost">Line By Line Display</button>
+                    <button id="clearBtn">Clear</button>
+                </div>
+            </div>
+
+            <div id="linePanel" class="linePanel" aria-live="polite">
+                <div class="linePanelHeader">
+                    <p class="title">Line-by-line conversion (Romanized + Unicode). Use the copy buttons on the right.
+                    </p>
+                    <button id="copyAllPairsBtn" class="ghost">Copy All (Pairs)</button>
+                </div>
+                <div id="pairs" class="pairs"></div>
+            </div>
+
+            <div class="hint">
+                Examples: <code>namaste</code> → नमस्ते, <code>नेपाल</code> should be typed as <code>nepal</code>,
+                <code>मेरो नाम राम हो</code> as <code>mero naam raam ho</code>.
+            </div>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">Copied!</div>
+
+    <script src="https://unpkg.com/nepalify@0.5.0/umd/nepalify.production.min.js"></script>
+
+    <script>
+        /* ---------------- THEME (light/dark) ---------------- */
+        const root = document.documentElement;
+        const themeToggle = document.getElementById("themeToggle");
+        const themeLabel = document.getElementById("themeLabel");
+
+        function setTheme(mode) {
+            if (!mode) {
+                root.removeAttribute("data-theme");
+                localStorage.removeItem("theme");
+                return;
+            }
+            root.setAttribute("data-theme", mode);
+            localStorage.setItem("theme", mode);
+        }
+
+        function syncThemeUI() {
+            const mode = root.getAttribute("data-theme");
+            let effective = mode;
+            if (!effective) {
+                effective = window.matchMedia && window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+            }
+            themeToggle.checked = (effective === "light");
+            themeLabel.textContent = effective === "light" ? "Light" : "Dark";
+        }
+
+        const savedTheme = localStorage.getItem("theme");
+        if (savedTheme === "light" || savedTheme === "dark") setTheme(savedTheme);
+        syncThemeUI();
+
+        themeToggle.addEventListener("change", () => {
+            setTheme(themeToggle.checked ? "light" : "dark");
+            syncThemeUI();
+        });
+
+        const mediaQuery = window.matchMedia("(prefers-color-scheme: light)");
+        if (mediaQuery.addEventListener) {
+            mediaQuery.addEventListener("change", () => {
+                if (!localStorage.getItem("theme")) syncThemeUI();
+            });
+        } else if (mediaQuery.addListener) {
+            mediaQuery.addListener(() => {
+                if (!localStorage.getItem("theme")) syncThemeUI();
+            });
+        }
+
+        /* ---------------- CONVERTER ---------------- */
+        function romanToUnicode(text) {
+            if (!window.nepalify || typeof window.nepalify.format !== "function") {
+                return text;
+            }
+            try {
+                return window.nepalify.format(text, { layout: "romanized" });
+            } catch (err) {
+                console.error("Conversion error:", err);
+                return text;
+            }
+        }
+
+        /* ---------------- UI WIRING ---------------- */
+        const r = document.getElementById("r");
+        const n = document.getElementById("n");
+        const rCount = document.getElementById("rCount");
+        const nCount = document.getElementById("nCount");
+        const toast = document.getElementById("toast");
+
+        const lineBtn = document.getElementById("lineBtn");
+        const linePanel = document.getElementById("linePanel");
+        const pairsEl = document.getElementById("pairs");
+        const copyAllPairsBtn = document.getElementById("copyAllPairsBtn");
+        let linePanelOpen = false;
+
+        function showToast(msg) {
+            toast.textContent = msg;
+            toast.classList.add("show");
+            clearTimeout(showToast._t);
+            showToast._t = setTimeout(() => toast.classList.remove("show"), 900);
+        }
+
+        async function copyText(text, msg) {
+            try {
+                await navigator.clipboard.writeText(text);
+                showToast(msg || "Copied!");
+            } catch (e) {
+                const temp = document.createElement("textarea");
+                temp.value = text;
+                document.body.appendChild(temp);
+                temp.select();
+                document.execCommand("copy");
+                document.body.removeChild(temp);
+                showToast(msg || "Copied!");
+            }
+        }
+
+        function renderLineByLine() {
+            const lines = r.value.split(/\r?\n/);
+            pairsEl.innerHTML = "";
+
+            const frag = document.createDocumentFragment();
+
+            lines.forEach((line, idx) => {
+                const unicodeLine = romanToUnicode(line);
+
+                const pair = document.createElement("div");
+                pair.className = "pair";
+
+                const rowR = document.createElement("div");
+                rowR.className = "lineRow";
+
+                const txtR = document.createElement("div");
+                txtR.className = "lineText";
+                txtR.textContent = line;
+
+                const btnR = document.createElement("button");
+                btnR.className = "miniBtn";
+                btnR.type = "button";
+                btnR.textContent = "⧉ Copy";
+                btnR.addEventListener("click", () => copyText(line, `Romanized line ${idx + 1} copied`));
+
+                rowR.appendChild(txtR);
+                rowR.appendChild(btnR);
+
+                const divider = document.createElement("div");
+                divider.className = "divider";
+
+                const rowN = document.createElement("div");
+                rowN.className = "lineRow";
+
+                const txtN = document.createElement("div");
+                txtN.className = "lineText unicode";
+                txtN.textContent = unicodeLine;
+
+                const btnN = document.createElement("button");
+                btnN.className = "miniBtn";
+                btnN.type = "button";
+                btnN.textContent = "⧉ Copy";
+                btnN.addEventListener("click", () => copyText(unicodeLine, `Unicode line ${idx + 1} copied`));
+
+                rowN.appendChild(txtN);
+                rowN.appendChild(btnN);
+
+                pair.appendChild(rowR);
+                pair.appendChild(divider);
+                pair.appendChild(rowN);
+
+                frag.appendChild(pair);
+            });
+
+            pairsEl.appendChild(frag);
+        }
+
+        function update() {
+            const unicode = romanToUnicode(r.value);
+            n.value = unicode;
+            rCount.textContent = String(r.value.length);
+            nCount.textContent = String(unicode.length);
+
+            if (linePanelOpen) renderLineByLine();
+        }
+
+        r.addEventListener("input", update);
+
+        document.getElementById("copyBtn").addEventListener("click", () => {
+            copyText(n.value, "Unicode copied");
+        });
+
+        document.getElementById("copyInputBtn").addEventListener("click", () => {
+            copyText(r.value, "Romanized input copied");
+        });
+
+        document.getElementById("clearBtn").addEventListener("click", () => {
+            r.value = "";
+            n.value = "";
+            update();
+            r.focus();
+        });
+
+        lineBtn.addEventListener("click", () => {
+            linePanelOpen = !linePanelOpen;
+            linePanel.classList.toggle("show", linePanelOpen);
+            lineBtn.textContent = linePanelOpen ? "Hide Line By Line" : "Line By Line Display";
+            if (linePanelOpen) {
+                renderLineByLine();
+                showToast("Line-by-line opened");
+            }
+        });
+
+        copyAllPairsBtn.addEventListener("click", () => {
+            const lines = r.value.split(/\r?\n/);
+            const out = [];
+            lines.forEach((line) => {
+                out.push(line);
+                out.push(romanToUnicode(line));
+                out.push("");
+            });
+            copyText(out.join("\n"), "All pairs copied");
+        });
+
+        update();
+    </script>
+</body>
+
+</html>
