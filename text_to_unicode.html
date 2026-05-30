@@ -349,6 +349,67 @@
             font-size: 12px;
         }
 
+        .cheat {
+            margin-top: 12px;
+            border: 1px solid var(--border);
+            border-radius: var(--radiusSm);
+            background: var(--field);
+        }
+        .cheat > summary {
+            cursor: pointer;
+            list-style: none;
+            padding: 10px 14px;
+            font-weight: 600;
+            color: var(--text);
+            user-select: none;
+        }
+        .cheat > summary::-webkit-details-marker { display: none; }
+        .cheat > summary::before {
+            content: "▸";
+            display: inline-block;
+            margin-right: 8px;
+            color: var(--accent);
+            transition: transform 0.15s ease;
+        }
+        .cheat[open] > summary::before { transform: rotate(90deg); }
+        .cheatBody {
+            padding: 4px 14px 14px;
+            border-top: 1px solid var(--border);
+        }
+        .cheatBody p { margin: 10px 0; }
+        .map {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 4px 0;
+        }
+        .map th {
+            text-align: left;
+            vertical-align: top;
+            white-space: nowrap;
+            padding: 6px 12px 6px 0;
+            color: var(--accent);
+            font-size: 11.5px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            border-top: 1px solid var(--border);
+        }
+        .map td {
+            padding: 6px 0;
+            line-height: 2;
+            border-top: 1px solid var(--border);
+        }
+        .map code {
+            font-family: "Noto Sans Devanagari", var(--mono);
+        }
+        .dim { color: var(--faint); }
+        .map .dim { font-size: 10px; text-transform: none; letter-spacing: 0; }
+
+        @media (max-width: 560px) {
+            .map, .map tr, .map th, .map td { display: block; width: 100%; }
+            .map th { border-top: 1px solid var(--border); padding-bottom: 0; }
+            .map td { padding-top: 2px; }
+        }
+
         .toast {
             position: fixed;
             left: 50%;
@@ -532,15 +593,70 @@
             </div>
 
             <div class="hint">
-                Examples: <code>namaste</code> → नमस्ते, <code>नेपाल</code> should be typed as <code>nepal</code>,
-                <code>मेरो नाम राम हो</code> as <code>mero naam raam ho</code>.
+                Examples: <code>namaste</code> → नमस्ते · <code>chandra</code> → चन्द्र ·
+                <code>kshamaa</code> → क्षमा · <code>gyaan</code> → ज्ञान ·
+                <code>mero naam raam ho</code> → मेरो नाम राम हो.
+                <details class="cheat">
+                    <summary>Typing rules &amp; full mapping</summary>
+                    <div class="cheatBody">
+                        <p><b>How half-letters work:</b> just type two consonants with no vowel
+                        between them — they auto-join with the halanta (्). e.g.
+                        <code>chitthee</code> → चिट्ठी, <code>khwaappaa</code> → ख्वाप्पा. To force a
+                        bare half-letter at the end of a word, add <code>\</code> — e.g.
+                        <code>ram\</code> → रम्.</p>
+
+                        <table class="map">
+                            <tr><th>Vowels</th><td>
+                                <code>a</code> अ · <code>aa</code> आ · <code>i</code> इ ·
+                                <code>ii</code>/<code>ee</code> ई · <code>u</code> उ ·
+                                <code>uu</code>/<code>oo</code> ऊ · <code>e</code> ए ·
+                                <code>ai</code> ऐ · <code>o</code> ओ · <code>au</code> औ ·
+                                <code>Ri</code> ऋ
+                            </td></tr>
+                            <tr><th>Velar / palatal</th><td>
+                                <code>k</code> क · <code>kh</code> ख · <code>g</code> ग ·
+                                <code>gh</code> घ · <code>ng</code> ङ · <code>ch</code> च ·
+                                <code>chh</code> छ · <code>j</code> ज · <code>jh</code> झ ·
+                                <code>yna</code> ञ
+                            </td></tr>
+                            <tr><th>Retroflex <span class="dim">(CAPITALS)</span></th><td>
+                                <code>T</code> ट · <code>Th</code> ठ · <code>D</code> ड ·
+                                <code>Dh</code> ढ · <code>N</code> ण
+                            </td></tr>
+                            <tr><th>Dental</th><td>
+                                <code>t</code> त · <code>th</code> थ · <code>d</code> द ·
+                                <code>dh</code> ध · <code>n</code> न
+                            </td></tr>
+                            <tr><th>Labial</th><td>
+                                <code>p</code> प · <code>ph</code>/<code>f</code> फ ·
+                                <code>b</code> ब · <code>bh</code> भ · <code>m</code> म
+                            </td></tr>
+                            <tr><th>Semivowel / sibilant</th><td>
+                                <code>y</code> य · <code>r</code> र · <code>l</code> ल ·
+                                <code>v</code>/<code>w</code> व · <code>sh</code> श ·
+                                <code>Sh</code>/<code>shh</code> ष · <code>s</code> स · <code>h</code> ह
+                            </td></tr>
+                            <tr><th>Conjuncts</th><td>
+                                <code>ksh</code>/<code>kshy</code>/<code>x</code> क्ष ·
+                                <code>gy</code>/<code>gny</code>/<code>jn</code> ज्ञ ·
+                                <code>tr</code> त्र
+                            </td></tr>
+                            <tr><th>Signs</th><td>
+                                <code>*</code> ं (anusvara) · <code>**</code> ँ (chandrabindu) ·
+                                <code>:</code> ः (visarga) · <code>|</code> । · <code>||</code> ॥ ·
+                                <code>OM</code> ॐ
+                            </td></tr>
+                        </table>
+                        <p class="dim">Tip: type in lowercase. CAPITALS are reserved for the
+                        retroflex (hard) consonants <code>T Th D Dh N</code> and <code>Sh</code>,
+                        so avoid capitalising the first letter of a word unless you want those.</p>
+                    </div>
+                </details>
             </div>
         </div>
     </div>
 
     <div id="toast" class="toast">Copied!</div>
-
-    <script src="https://unpkg.com/nepalify@0.5.0/umd/nepalify.production.min.js"></script>
 
     <script>
         /* ---------------- THEME (light/dark) ---------------- */
@@ -588,13 +704,191 @@
             });
         }
 
-        /* ---------------- CONVERTER ---------------- */
-        function romanToUnicode(text) {
-            if (!window.nepalify || typeof window.nepalify.format !== "function") {
-                return text;
+        /* ---------------- CONVERTER ----------------
+         *  Self-contained Romanized → Nepali Unicode transliteration engine.
+         *
+         *  How conjuncts / half-letters work in Unicode:
+         *    Two consonants with no vowel between them are joined by the
+         *    VIRAMA / halanta  ्  (U+094D):   क + ् + ष  →  क्ष
+         *    Whether the font shows this as a "stem-cut" half-letter (न् → न-)
+         *    or an explicit halanta under a round letter (ट्) is decided by the
+         *    FONT (Noto Sans Devanagari), not by us. We always emit correct
+         *    Unicode; the font renders the right shape automatically.
+         *
+         *  Scheme (case-sensitive where it must disambiguate):
+         *    Vowels      a आ/ा-inherent · aa आ · i इ · ii/ee ई · u उ · uu/oo ऊ
+         *                e ए · ai ऐ · o ओ · au औ · Ri ऋ
+         *    Consonants  k kh g gh ng · ch chh j jh yna · t th d dh n · p ph/f b bh m
+         *                y r l v/w · sh s h · Sh/shh ष
+         *    Retroflex   CAPITALS → T ट · Th ठ · D ड · Dh ढ · N ण
+         *    Conjuncts   ksh/kshy/x क्ष · gy/gny/jn ज्ञ · tr त्र (any C+C also joins)
+         *    Signs       *  ं (anusvara) · ** ँ (chandrabindu) · :  ः (visarga)
+         *                |  । danda · || ॥ · OM ॐ · \  forces a halanta (half letter)
+         */
+        const Nep = (function () {
+            const VIRAMA = "्"; // ्
+
+            // matra "" == the inherent short "a" (no sign written)
+            let VOWELS = [
+                { k: "aa", ind: "आ", m: "ा" },
+                { k: "ai", ind: "ऐ", m: "ै" },
+                { k: "au", ind: "औ", m: "ौ" },
+                { k: "ii", ind: "ई", m: "ी" },
+                { k: "ee", ind: "ई", m: "ी" },
+                { k: "oo", ind: "ऊ", m: "ू" },
+                { k: "uu", ind: "ऊ", m: "ू" },
+                { k: "Ri", ind: "ऋ", m: "ृ" },
+                { k: "RI", ind: "ऋ", m: "ृ" },
+                { k: "a", ind: "अ", m: "" },
+                { k: "i", ind: "इ", m: "ि" },
+                { k: "u", ind: "उ", m: "ु" },
+                { k: "e", ind: "ए", m: "े" },
+                { k: "o", ind: "ओ", m: "ो" }
+            ];
+
+            // c == the "full" consonant (carries an inherent "a").
+            // Multi-character conjunct bases (क्ष, ज्ञ, त्र) already contain a
+            // virama internally — joining/matra rules below still work on them.
+            let CONSONANTS = [
+                { k: "kshy", c: "क्ष" },
+                { k: "ksh", c: "क्ष" },
+                { k: "gny", c: "ज्ञ" },
+                { k: "yna", c: "ञ" },
+                { k: "chh", c: "छ" },
+                { k: "shh", c: "ष" },
+                { k: "Th", c: "ठ" },
+                { k: "Dh", c: "ढ" },
+                { k: "Sh", c: "ष" },
+                { k: "kh", c: "ख" },
+                { k: "gh", c: "घ" },
+                { k: "ng", c: "ङ" },
+                { k: "ch", c: "च" },
+                { k: "jh", c: "झ" },
+                { k: "th", c: "थ" },
+                { k: "dh", c: "ध" },
+                { k: "ph", c: "फ" },
+                { k: "bh", c: "भ" },
+                { k: "sh", c: "श" },
+                { k: "gy", c: "ज्ञ" },
+                { k: "tr", c: "त्र" },
+                { k: "jn", c: "ज्ञ" },
+                { k: "x", c: "क्ष" },
+                { k: "T", c: "ट" },
+                { k: "D", c: "ड" },
+                { k: "N", c: "ण" },
+                { k: "k", c: "क" },
+                { k: "g", c: "ग" },
+                { k: "c", c: "च" },
+                { k: "j", c: "ज" },
+                { k: "t", c: "त" },
+                { k: "d", c: "द" },
+                { k: "n", c: "न" },
+                { k: "p", c: "प" },
+                { k: "f", c: "फ" },
+                { k: "b", c: "ब" },
+                { k: "m", c: "म" },
+                { k: "y", c: "य" },
+                { k: "r", c: "र" },
+                { k: "l", c: "ल" },
+                { k: "v", c: "व" },
+                { k: "w", c: "व" },
+                { k: "s", c: "स" },
+                { k: "h", c: "ह" }
+            ];
+
+            // Longest key first so greedy matching is correct regardless of order.
+            const byLen = (a, b) => b.k.length - a.k.length;
+            VOWELS = VOWELS.slice().sort(byLen);
+            CONSONANTS = CONSONANTS.slice().sort(byLen);
+
+            function matchAt(list, s, i) {
+                for (let j = 0; j < list.length; j++) {
+                    if (s.startsWith(list[j].k, i)) return list[j];
+                }
+                return null;
             }
+
+            function convert(input) {
+                let s = String(input == null ? "" : input);
+                let out = "";
+                let i = 0;
+
+                while (i < s.length) {
+                    const ch = s[i];
+
+                    /* standalone signs / punctuation */
+                    if (s.startsWith("**", i)) { out += "ँ"; i += 2; continue; } // ँ
+                    if (ch === "*") { out += "ं"; i += 1; continue; }            // ं
+                    if (s.startsWith("||", i)) { out += "॥"; i += 2; continue; }
+                    if (ch === "|") { out += "।"; i += 1; continue; }
+                    if (ch === ":") { out += "ः"; i += 1; continue; }            // ः
+                    if (s.startsWith("OM", i)) { out += "ॐ"; i += 2; continue; }
+                    if (ch === "\\") { i += 1; continue; } // stray halanta marker
+
+                    /* consonant (possibly the head of a cluster) */
+                    const cons = matchAt(CONSONANTS, s, i);
+                    if (cons) {
+                        const cluster = [cons.c];
+                        i += cons.k.length;
+
+                        while (true) {
+                            if (s[i] === "\\") { // explicit halanta → half/pure consonant
+                                i += 1;
+                                out += cluster.join(VIRAMA) + VIRAMA;
+                                break;
+                            }
+                            const v = matchAt(VOWELS, s, i);
+                            if (v) {
+                                i += v.k.length;
+                                out += cluster.join(VIRAMA) + v.m;
+                                break;
+                            }
+                            const c2 = matchAt(CONSONANTS, s, i);
+                            if (c2) {
+                                cluster.push(c2.c);
+                                i += c2.k.length;
+                                continue;
+                            }
+                            // an unmatched CAPITAL → retry it as lowercase
+                            if (s[i] && /[A-Z]/.test(s[i])) {
+                                s = s.slice(0, i) + s[i].toLowerCase() + s.slice(i + 1);
+                                continue;
+                            }
+                            // nothing follows → last consonant keeps inherent "a"
+                            out += cluster.join(VIRAMA);
+                            break;
+                        }
+                        continue;
+                    }
+
+                    /* independent vowel (syllable-initial) */
+                    const vow = matchAt(VOWELS, s, i);
+                    if (vow) {
+                        out += vow.ind;
+                        i += vow.k.length;
+                        continue;
+                    }
+
+                    /* unmatched CAPITAL → retry as lowercase (e.g. sentence-initial) */
+                    if (/[A-Z]/.test(ch)) {
+                        s = s.slice(0, i) + ch.toLowerCase() + s.slice(i + 1);
+                        continue;
+                    }
+
+                    /* anything else (spaces, digits, punctuation) passes through */
+                    out += ch;
+                    i += 1;
+                }
+
+                return out;
+            }
+
+            return { convert: convert };
+        })();
+
+        function romanToUnicode(text) {
             try {
-                return window.nepalify.format(text, { layout: "romanized" });
+                return Nep.convert(text);
             } catch (err) {
                 console.error("Conversion error:", err);
                 return text;
