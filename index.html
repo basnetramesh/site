@@ -401,6 +401,52 @@
       transform: translateY(8px);
       transition: max-height 0.7s ease, opacity 0.4s ease, transform 0.35s ease;
     }
+    /* publication cards: clicking the box expands it (as before);
+       only the ↗ button in the corner opens the paper in a new tab */
+    .pub-card .role {
+      padding-right: 40px;
+    }
+    .pub-go {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      z-index: 4;
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      text-decoration: none;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.05);
+      opacity: 0.6;
+      cursor: pointer;
+      transition: opacity 0.2s ease, color 0.2s ease, border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+    }
+    .pub-card:hover .pub-go {
+      opacity: 1;
+    }
+    .pub-go:hover,
+    .pub-go:focus-visible {
+      opacity: 1;
+      color: var(--text);
+      border-color: var(--accent);
+      background: rgba(123, 97, 255, 0.2);
+      transform: translateY(-1px);
+    }
+    .pub-go:focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 3px;
+    }
+    .pub-go svg {
+      width: 14px;
+      height: 14px;
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .pub-go { transition: opacity 0.2s ease; }
+    }
     .skill-tags {
       display: flex;
       flex-wrap: wrap;
@@ -1027,7 +1073,10 @@
         </a>
       </div>
       <div class="timeline">
-        <article class="timeline-item hover-reveal">
+        <article class="timeline-item hover-reveal pub-card">
+          <a class="pub-go" href="https://arxiv.org/abs/2205.12429" target="_blank" rel="noopener noreferrer" aria-label="Open this paper on arXiv in a new tab" title="Open paper in new tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+          </a>
           <div>
             <h2 class="role">Interaction of a priori Anatomic Knowledge with Self-Supervised Contrastive Learning in Cardiac Magnetic Resonance Imaging</h2>
             <p class="company">arXiv · May 25, 2022</p>
@@ -1040,7 +1089,10 @@
           </div>
         </article>
 
-        <article class="timeline-item hover-reveal">
+        <article class="timeline-item hover-reveal pub-card">
+          <a class="pub-go" href="https://www.ahajournals.org/doi/abs/10.1161/circ.144.suppl_1.12691" target="_blank" rel="noopener noreferrer" aria-label="Open this abstract in Circulation in a new tab" title="Open paper in new tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+          </a>
           <div>
             <h2 class="role">Comparison of Deep Learning and Radiomic Features to Differentiate Non-Ischemic and Ischemic Cardiomyopathy Using Cardiac MRI Cine Imaging</h2>
             <p class="company">Circulation · Nov 16, 2021</p>
@@ -1053,7 +1105,10 @@
           </div>
         </article>
 
-        <article class="timeline-item hover-reveal">
+        <article class="timeline-item hover-reveal pub-card">
+          <a class="pub-go" href="https://www.sciencedirect.com/science/article/pii/S1746809421006601" target="_blank" rel="noopener noreferrer" aria-label="Open this paper in Biomedical Signal Processing and Control in a new tab" title="Open paper in new tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+          </a>
           <div>
             <h2 class="role">A deep dense residual network with reduced parameters for volumetric brain tissue segmentation from MR images</h2>
             <p class="company">Biomedical Signal Processing and Control · Aug 24, 2021</p>
@@ -1066,7 +1121,10 @@
           </div>
         </article>
 
-        <article class="timeline-item hover-reveal">
+        <article class="timeline-item hover-reveal pub-card">
+          <a class="pub-go" href="https://ieeexplore.ieee.org/document/9339962/" target="_blank" rel="noopener noreferrer" aria-label="Open this paper in IEEE Transactions on Medical Imaging in a new tab" title="Open paper in new tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+          </a>
           <div>
             <h2 class="role">Benchmark on multiple site infant brain segmentation algorithms: The iSeg-2019 challenge</h2>
             <p class="company">IEEE Transactions on Medical Imaging · Jan 28, 2021</p>
@@ -1079,7 +1137,10 @@
           </div>
         </article>
 
-        <article class="timeline-item hover-reveal">
+        <article class="timeline-item hover-reveal pub-card">
+          <a class="pub-go" href="https://www.sciencedirect.com/science/article/abs/pii/S0167865518305312" target="_blank" rel="noopener noreferrer" aria-label="Open this paper in Pattern Recognition Letters in a new tab" title="Open paper in new tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+          </a>
           <div>
             <h2 class="role">Estimation of affective dimensions using CNN-based features of audiovisual data</h2>
             <p class="company">Pattern Recognition Letters · Sep 17, 2019</p>
@@ -1092,7 +1153,10 @@
           </div>
         </article>
 
-        <article class="timeline-item hover-reveal">
+        <article class="timeline-item hover-reveal pub-card">
+          <a class="pub-go" href="https://ieeexplore.ieee.org/document/8250263/" target="_blank" rel="noopener noreferrer" aria-label="Open this paper on IEEE Xplore in a new tab" title="Open paper in new tab">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7"/><path d="M8 7h9v9"/></svg>
+          </a>
           <div>
             <h2 class="role">Statistical Selection of CNN-based Audiovisual Features for Instantaneous Estimation of Human Emotional States</h2>
             <p class="company">2017 International Conference on New Trends in Computing Sciences (ICTCS) · Jan 11, 2018</p>
