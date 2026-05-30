@@ -560,17 +560,17 @@
       z-index: 0;
       pointer-events: none;
       overflow: hidden;
-      filter: blur(120px);
-      opacity: 0.16;
+      filter: blur(60px);
+      opacity: 0.22;
     }
     .aurora b {
       position: absolute;
       display: block;
       border-radius: 50%;
     }
-    .aurora .b1 { width: 560px; height: 560px; background: #5b46c4; top: -180px; left: -120px; animation: float1 22s ease-in-out infinite; }
-    .aurora .b2 { width: 500px; height: 500px; background: #2e8f86; top: 8%; right: -160px; animation: float2 28s ease-in-out infinite; }
-    .aurora .b3 { width: 440px; height: 440px; background: #6a4a78; bottom: -200px; left: 26%; animation: float3 34s ease-in-out infinite; }
+    .aurora .b1 { width: 560px; height: 560px; background: radial-gradient(circle, #5b46c4 0%, rgba(91,70,196,0) 70%); top: -180px; left: -120px; animation: float1 22s ease-in-out infinite; }
+    .aurora .b2 { width: 500px; height: 500px; background: radial-gradient(circle, #2e8f86 0%, rgba(46,143,134,0) 70%); top: 8%; right: -160px; animation: float2 28s ease-in-out infinite; }
+    .aurora .b3 { width: 440px; height: 440px; background: radial-gradient(circle, #6a4a78 0%, rgba(106,74,120,0) 70%); bottom: -200px; left: 26%; animation: float3 34s ease-in-out infinite; }
     @keyframes float1 { 50% { transform: translate(80px, 70px) scale(1.12); } }
     @keyframes float2 { 50% { transform: translate(-70px, 90px) scale(1.16); } }
     @keyframes float3 { 50% { transform: translate(50px, -80px) scale(1.06); } }
@@ -668,7 +668,7 @@
       background-color: rgba(20, 20, 29, 0.66);
       background-image: radial-gradient(
         220px circle at var(--mx, -200px) var(--my, -200px),
-        rgba(123, 97, 255, 0.16),
+        rgba(123, 97, 255, 0.05),
         transparent 65%
       );
       backdrop-filter: blur(7px);
@@ -1184,7 +1184,7 @@
             bgCtx.beginPath();
             bgCtx.moveTo(a.x, a.y);
             bgCtx.lineTo(pointer.x, pointer.y);
-            bgCtx.strokeStyle = `rgba(75, 225, 208, ${0.55 * alpha})`;
+            bgCtx.strokeStyle = `rgba(75, 225, 208, ${0.35 * alpha})`;
             bgCtx.lineWidth = 1;
             bgCtx.stroke();
             a.vx -= (dx / dist) * 0.02 * alpha;
@@ -1192,7 +1192,7 @@
           }
         }
         const glow = bgCtx.createRadialGradient(pointer.x, pointer.y, 0, pointer.x, pointer.y, 90);
-        glow.addColorStop(0, "rgba(123, 97, 255, 0.07)");
+        glow.addColorStop(0, "rgba(123, 97, 255, 0.025)");
         glow.addColorStop(1, "rgba(123, 97, 255, 0)");
         bgCtx.fillStyle = glow;
         bgCtx.beginPath();
