@@ -3,6 +3,9 @@
 
 <head>
 	<meta charset="utf-8" />
+	<!-- © 2026 Ramesh Basnet. All rights reserved. rameshbasnet@proton.me -->
+	<meta name="author" content="Ramesh Basnet" />
+	<meta name="copyright" content="© Ramesh Basnet. All rights reserved." />
 	<meta name="viewport" content="width=device-width,initial-scale=1" />
 	<title>Unicode → Preeti Converter</title>
 
@@ -533,6 +536,10 @@
 
 			</div>
 		</div>
+
+		<footer style="text-align:center;font-size:12px;line-height:1.6;opacity:.62;margin:26px auto 0;padding:14px 16px;">
+			© <span class="js-year">2026</span> Ramesh Basnet. All rights reserved. <a href="mailto:rameshbasnet@proton.me" style="color:inherit;">rameshbasnet@proton.me</a>
+		</footer>
 	</div>
 
 	<div id="toast" class="toast">Copied!</div>
@@ -837,6 +844,11 @@
 		});
 
 		update();
+
+		/* keep the footer copyright year current */
+		document.querySelectorAll(".js-year").forEach(function (el) {
+			el.textContent = new Date().getFullYear();
+		});
 	</script>
 </body>
 
