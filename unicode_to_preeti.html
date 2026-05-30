@@ -7,84 +7,130 @@
 	<title>Unicode → Preeti Converter</title>
 
 	<style>
-		/* ---------- Theme tokens ---------- */
+		/* ---------- Theme tokens (futuristic dark, brand-matched) ---------- */
 		:root {
-			--bg: #0b1220;
-			--text: #e7eefc;
-			--muted: rgba(231, 238, 252, 0.78);
-			--card: rgba(255, 255, 255, 0.06);
-			--border: rgba(255, 255, 255, 0.12);
-			--field: rgba(0, 0, 0, 0.22);
-			--btn: rgba(255, 255, 255, 0.10);
-			--btnHover: rgba(255, 255, 255, 0.14);
-			--focus: rgba(120, 160, 255, 0.55);
-			--shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-			--radius: 16px;
+			--bg: #0b0b0f;
+			--text: #f5f6fb;
+			--muted: #b4b6c6;
+			--faint: #6f7186;
+			--accent: #7b61ff;
+			--energy: #4be1d0;
+			--card: rgba(20, 20, 29, 0.66);
+			--border: rgba(255, 255, 255, 0.07);
+			--field: rgba(0, 0, 0, 0.28);
+			--btn: rgba(255, 255, 255, 0.05);
+			--btnHover: rgba(255, 255, 255, 0.1);
+			--focus: rgba(75, 225, 208, 0.55);
+			--focusRing: rgba(75, 225, 208, 0.16);
+			--shadow: 0 18px 50px rgba(0, 0, 0, 0.45);
+			--grad: linear-gradient(120deg, #7b61ff, #4be1d0);
+			--radius: 18px;
 			--radiusSm: 12px;
 			--mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-			font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+			font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
 			color-scheme: dark;
 		}
 
 		/* Light mode overrides */
 		[data-theme="light"] {
-			--bg: #f6f7fb;
+			--bg: #eef0f7;
 			--text: #0c1220;
 			--muted: rgba(12, 18, 32, 0.72);
+			--faint: rgba(12, 18, 32, 0.5);
+			--accent: #6a4ce0;
+			--energy: #119e8c;
 			--card: rgba(255, 255, 255, 0.92);
-			--border: rgba(12, 18, 32, 0.12);
-			--field: rgba(12, 18, 32, 0.05);
-			--btn: rgba(12, 18, 32, 0.06);
-			--btnHover: rgba(12, 18, 32, 0.10);
-			--focus: rgba(0, 90, 255, 0.35);
-			--shadow: 0 10px 25px rgba(12, 18, 32, 0.08);
+			--border: rgba(12, 18, 32, 0.1);
+			--field: rgba(12, 18, 32, 0.04);
+			--btn: rgba(12, 18, 32, 0.05);
+			--btnHover: rgba(12, 18, 32, 0.1);
+			--focus: rgba(17, 158, 140, 0.45);
+			--focusRing: rgba(17, 158, 140, 0.14);
+			--shadow: 0 12px 30px rgba(12, 18, 32, 0.1);
 			color-scheme: light;
 		}
 
-		/* Respect system preference by default (unless user toggles) */
 		@media (prefers-color-scheme: light) {
 			:root:not([data-theme]) {
-				--bg: #f6f7fb;
+				--bg: #eef0f7;
 				--text: #0c1220;
 				--muted: rgba(12, 18, 32, 0.72);
+				--faint: rgba(12, 18, 32, 0.5);
+				--accent: #6a4ce0;
+				--energy: #119e8c;
 				--card: rgba(255, 255, 255, 0.92);
-				--border: rgba(12, 18, 32, 0.12);
-				--field: rgba(12, 18, 32, 0.05);
-				--btn: rgba(12, 18, 32, 0.06);
-				--btnHover: rgba(12, 18, 32, 0.10);
-				--focus: rgba(0, 90, 255, 0.35);
-				--shadow: 0 10px 25px rgba(12, 18, 32, 0.08);
+				--border: rgba(12, 18, 32, 0.1);
+				--field: rgba(12, 18, 32, 0.04);
+				--btn: rgba(12, 18, 32, 0.05);
+				--btnHover: rgba(12, 18, 32, 0.1);
+				--focus: rgba(17, 158, 140, 0.45);
+				--focusRing: rgba(17, 158, 140, 0.14);
+				--shadow: 0 12px 30px rgba(12, 18, 32, 0.1);
 				color-scheme: light;
 			}
 		}
 
-		/* ---------- Layout fixes (prevents overflow/overlap) ---------- */
 		*,
 		*::before,
 		*::after {
 			box-sizing: border-box;
 		}
 
-		body {
+		html, body {
 			margin: 0;
 			background: var(--bg);
 			color: var(--text);
 			min-height: 100vh;
+			-webkit-font-smoothing: antialiased;
 		}
 
-		.wrap {
-			max-width: 1100px;
-			margin: 0 auto;
-			padding: 20px 14px 34px;
+		/* animated grid backdrop */
+		body::before {
+			content: ""; position: fixed; inset: -50%; z-index: 0; pointer-events: none;
+			background-image:
+				linear-gradient(var(--border) 1px, transparent 1px),
+				linear-gradient(90deg, var(--border) 1px, transparent 1px);
+			background-size: 46px 46px;
+			-webkit-mask-image: radial-gradient(circle at 50% 18%, #000 0%, transparent 66%);
+			mask-image: radial-gradient(circle at 50% 18%, #000 0%, transparent 66%);
+			animation: drift 40s linear infinite; opacity: 0.4;
 		}
+		@keyframes drift { to { transform: translate(46px, 46px); } }
+
+		/* aurora glow field */
+		.aurora { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; filter: blur(120px); opacity: 0.14; }
+		.aurora b { position: absolute; display: block; border-radius: 50%; }
+		.aurora .b1 { width: 520px; height: 520px; background: #5b46c4; top: -200px; left: -120px; animation: float1 24s ease-in-out infinite; }
+		.aurora .b2 { width: 460px; height: 460px; background: #2e8f86; top: 6%; right: -160px; animation: float2 30s ease-in-out infinite; }
+		@keyframes float1 { 50% { transform: translate(80px, 70px) scale(1.12); } }
+		@keyframes float2 { 50% { transform: translate(-70px, 90px) scale(1.16); } }
+
+		.wrap {
+			position: relative;
+			z-index: 1;
+			width: min(1100px, 94vw);
+			margin: 0 auto;
+			padding: 28px clamp(16px, 3vw, 28px) 40px;
+		}
+
+		/* back link */
+		.back {
+			display: inline-flex; align-items: center; gap: 8px;
+			font-size: 13px; color: var(--muted); text-decoration: none;
+			width: max-content; margin-bottom: 18px;
+			transition: color 0.2s ease, transform 0.2s ease;
+		}
+		.back svg { width: 15px; height: 15px; }
+		.back:hover, .back:focus-visible { color: var(--text); transform: translateX(-2px); }
 
 		.card {
 			background: var(--card);
 			border: 1px solid var(--border);
 			border-radius: var(--radius);
-			padding: 16px;
+			padding: 22px;
 			box-shadow: var(--shadow);
-			backdrop-filter: blur(8px);
+			backdrop-filter: blur(10px);
+			-webkit-backdrop-filter: blur(10px);
 		}
 
 		.topbar {
@@ -93,21 +139,27 @@
 			justify-content: space-between;
 			gap: 12px;
 			flex-wrap: wrap;
-			margin-bottom: 10px;
+			margin-bottom: 4px;
 		}
 
+		.eyebrow { letter-spacing: 0.26em; text-transform: uppercase; font-size: 11px; color: var(--accent); font-weight: 600; display: block; margin-bottom: 8px; }
+
 		h1 {
-			font-size: 18px;
-			margin: 0 0 6px;
-			letter-spacing: 0.2px;
+			font-size: clamp(22px, 3vw, 28px);
+			margin: 0 0 8px;
+			letter-spacing: -0.02em;
+			line-height: 1.1;
 		}
+		h1 .glow { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
 
 		.sub {
 			margin: 0;
 			color: var(--muted);
-			line-height: 1.45;
-			font-size: 13px;
+			line-height: 1.55;
+			font-size: 13.5px;
+			max-width: 560px;
 		}
+		.sub b { color: var(--text); }
 
 		.actions {
 			display: flex;
@@ -120,7 +172,7 @@
 			display: inline-flex;
 			align-items: center;
 			gap: 8px;
-			padding: 8px 10px;
+			padding: 8px 12px;
 			border-radius: 999px;
 			border: 1px solid var(--border);
 			background: var(--btn);
@@ -134,13 +186,15 @@
 			width: 42px;
 			height: 24px;
 			border-radius: 999px;
-			background: rgba(255, 255, 255, 0.18);
+			background: rgba(255, 255, 255, 0.12);
 			border: 1px solid var(--border);
 			position: relative;
 			cursor: pointer;
 			outline: none;
 			flex: 0 0 auto;
+			transition: background 0.2s ease;
 		}
+		.toggle:checked { background: rgba(75, 225, 208, 0.35); }
 
 		[data-theme="light"] .toggle {
 			background: rgba(12, 18, 32, 0.12);
@@ -166,11 +220,10 @@
 		.grid {
 			display: grid;
 			grid-template-columns: 1fr 1fr;
-			gap: 12px;
-			margin-top: 14px;
+			gap: 14px;
+			margin-top: 18px;
 		}
 
-		/* IMPORTANT: prevents textareas from overflowing grid columns */
 		.col {
 			min-width: 0;
 		}
@@ -186,33 +239,38 @@
 			justify-content: space-between;
 			align-items: center;
 			gap: 10px;
-			font-size: 12px;
-			color: var(--muted);
+			font-size: 11px;
+			letter-spacing: 0.04em;
+			text-transform: uppercase;
+			color: var(--faint);
 			margin: 4px 0 8px;
 		}
 
 		.counter {
 			font-size: 11px;
+			letter-spacing: normal;
+			text-transform: none;
 			opacity: 0.85;
 			font-family: var(--mono);
 		}
 
 		textarea {
 			width: 100%;
-			min-height: 280px;
+			min-height: clamp(280px, 60vh, 680px);
 			max-width: 100%;
 			resize: vertical;
 			border-radius: var(--radiusSm);
 			border: 1px solid var(--border);
 			background: var(--field);
 			color: var(--text);
-			padding: 12px;
+			padding: 14px;
 			line-height: 1.55;
 			font-size: 14px;
 			outline: none;
 			overflow: auto;
 			display: block;
 			word-break: break-word;
+			transition: border-color 0.2s ease, box-shadow 0.2s ease;
 		}
 
 		#p {
@@ -221,14 +279,14 @@
 
 		textarea:focus {
 			border-color: var(--focus);
-			box-shadow: 0 0 0 4px rgba(120, 160, 255, 0.15);
+			box-shadow: 0 0 0 4px var(--focusRing);
 		}
 
 		.row {
 			display: flex;
 			gap: 10px;
 			flex-wrap: wrap;
-			margin-top: 12px;
+			margin-top: 16px;
 			align-items: center;
 			justify-content: space-between;
 		}
@@ -245,37 +303,59 @@
 			border: 1px solid var(--border);
 			background: var(--btn);
 			color: var(--text);
-			padding: 10px 12px;
+			padding: 10px 14px;
 			border-radius: 12px;
 			cursor: pointer;
-			font-weight: 650;
+			font-weight: 600;
 			font-size: 13px;
+			transition: background 0.2s ease, border-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
 		}
 
 		button:hover {
 			background: var(--btnHover);
+			transform: translateY(-1px);
 		}
+
+		/* primary action — gradient accent */
+		#copyBtn {
+			border: 0;
+			color: #0b0b0f;
+			font-weight: 700;
+			background: var(--grad);
+			box-shadow: 0 0 20px rgba(75, 225, 208, 0.18);
+		}
+		#copyBtn:hover { box-shadow: 0 0 26px rgba(75, 225, 208, 0.32); }
 
 		.ghost {
 			background: transparent;
 		}
+		.ghost:hover { background: var(--btnHover); }
 
 		.hint {
-			margin-top: 10px;
+			margin-top: 12px;
 			font-size: 12px;
 			color: var(--muted);
-			line-height: 1.4;
+			line-height: 1.5;
+		}
+		.hint code {
+			font-family: var(--mono);
+			background: var(--field);
+			border: 1px solid var(--border);
+			border-radius: 6px;
+			padding: 1px 6px;
+			font-size: 12px;
 		}
 
 		.toast {
 			position: fixed;
 			left: 50%;
-			bottom: 18px;
+			bottom: 22px;
+			z-index: 20;
 			transform: translateX(-50%);
-			padding: 10px 12px;
+			padding: 10px 16px;
 			border-radius: 999px;
-			border: 1px solid var(--border);
-			background: var(--card);
+			border: 1px solid rgba(75, 225, 208, 0.4);
+			background: rgba(20, 19, 40, 0.92);
 			color: var(--text);
 			box-shadow: var(--shadow);
 			opacity: 0;
@@ -283,6 +363,7 @@
 			transition: opacity 160ms ease, transform 160ms ease;
 			font-size: 12px;
 		}
+		[data-theme="light"] .toast { background: var(--card); }
 
 		.toast.show {
 			opacity: 1;
@@ -291,9 +372,9 @@
 
 		/* ---------- Line-by-line panel ---------- */
 		.linePanel {
-			margin-top: 14px;
+			margin-top: 16px;
 			border-top: 1px solid var(--border);
-			padding-top: 14px;
+			padding-top: 16px;
 			display: none;
 		}
 
@@ -307,7 +388,7 @@
 			align-items: center;
 			gap: 10px;
 			flex-wrap: wrap;
-			margin-bottom: 10px;
+			margin-bottom: 12px;
 		}
 
 		.linePanelHeader .title {
@@ -324,9 +405,9 @@
 
 		.pair {
 			border: 1px solid var(--border);
-			border-radius: 12px;
+			border-radius: 14px;
 			background: var(--field);
-			padding: 10px;
+			padding: 12px;
 		}
 
 		.lineRow {
@@ -368,6 +449,10 @@
 			height: 10px;
 		}
 
+		@media (prefers-reduced-motion: reduce) {
+			.aurora b, body::before { animation: none; }
+		}
+
 		@media (max-width: 520px) {
 			.lineRow {
 				grid-template-columns: 1fr;
@@ -381,11 +466,17 @@
 </head>
 
 <body>
+	<div class="aurora" aria-hidden="true"><b class="b1"></b><b class="b2"></b></div>
 	<div class="wrap">
+		<a class="back" href="./utils.html">
+			<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+			Back to utilities
+		</a>
 		<div class="card">
 			<div class="topbar">
 				<div>
-					<h1>Unicode → Preeti Converter</h1>
+					<span class="eyebrow">Nepali · Unicode → Preeti</span>
+					<h1>Unicode → <span class="glow">Preeti</span> Converter</h1>
 					<p class="sub">
 						Paste Nepali Unicode on the left. Output Preeti typing appears on the right.
 						Copy the right text and set font to <b>Preeti</b>.

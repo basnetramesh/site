@@ -471,13 +471,260 @@
         left: -24px;
       }
     }
+
+    /* ============================================================
+       FUTURISTIC ENHANCEMENT LAYER
+       ============================================================ */
+    :root {
+      --accent-2: #4be1d0;
+      --grad: linear-gradient(120deg, #7b61ff, #4be1d0);
+    }
+
+    /* utils launcher — fixed top-right icon */
+    .utils-link {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 101;
+      width: 42px;
+      height: 42px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 12px;
+      color: var(--muted);
+      background: rgba(20, 20, 29, 0.55);
+      border: 1px solid var(--line);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      transition: color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .utils-link:hover,
+    .utils-link:focus-visible {
+      color: var(--text);
+      border-color: rgba(75, 225, 208, 0.5);
+      transform: translateY(-1px);
+      box-shadow: 0 0 22px rgba(75, 225, 208, 0.22);
+    }
+    .utils-link svg {
+      width: 20px;
+      height: 20px;
+      transition: transform 0.5s cubic-bezier(.2,.8,.2,1);
+    }
+    .utils-link:hover svg,
+    .utils-link:focus-visible svg {
+      transform: rotate(90deg);
+    }
+    .utils-link .utils-tip {
+      position: absolute;
+      top: 50%;
+      right: 120%;
+      transform: translateY(-50%);
+      white-space: nowrap;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+      background: rgba(20, 19, 40, 0.92);
+      border: 1px solid var(--line);
+      padding: 5px 10px;
+      border-radius: 999px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .utils-link:hover .utils-tip,
+    .utils-link:focus-visible .utils-tip {
+      opacity: 1;
+    }
+
+    /* scroll progress bar */
+    .scroll-progress {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      z-index: 100;
+      pointer-events: none;
+    }
+    .scroll-progress-bar {
+      height: 100%;
+      width: 0%;
+      background: var(--grad);
+      box-shadow: 0 0 12px rgba(75, 225, 208, 0.6);
+    }
+
+    /* aurora glow field */
+    .aurora {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+      filter: blur(120px);
+      opacity: 0.16;
+    }
+    .aurora b {
+      position: absolute;
+      display: block;
+      border-radius: 50%;
+    }
+    .aurora .b1 { width: 560px; height: 560px; background: #5b46c4; top: -180px; left: -120px; animation: float1 22s ease-in-out infinite; }
+    .aurora .b2 { width: 500px; height: 500px; background: #2e8f86; top: 8%; right: -160px; animation: float2 28s ease-in-out infinite; }
+    .aurora .b3 { width: 440px; height: 440px; background: #6a4a78; bottom: -200px; left: 26%; animation: float3 34s ease-in-out infinite; }
+    @keyframes float1 { 50% { transform: translate(80px, 70px) scale(1.12); } }
+    @keyframes float2 { 50% { transform: translate(-70px, 90px) scale(1.16); } }
+    @keyframes float3 { 50% { transform: translate(50px, -80px) scale(1.06); } }
+
+    /* hero top row */
+    .hero-top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 2px;
+    }
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid var(--line);
+    }
+    .status-pill .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--accent-2);
+      box-shadow: 0 0 0 0 var(--accent-2);
+      animation: live 1.8s infinite;
+    }
+    @keyframes live {
+      0% { box-shadow: 0 0 0 0 rgba(75, 225, 208, 0.5); }
+      70% { box-shadow: 0 0 0 7px rgba(75, 225, 208, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(75, 225, 208, 0); }
+    }
+    .clock { font-variant-numeric: tabular-nums; letter-spacing: 0.04em; }
+
+    h1 { line-height: 1.05; }
+
+    /* terminal-style role rotator */
+    .roles {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: clamp(15px, 2vw, 18px);
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      min-height: 1.7em;
+      margin-top: -2px;
+    }
+    .roles .pre { color: var(--accent); opacity: 0.8; }
+    .roles .word {
+      background: var(--grad);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-weight: 600;
+    }
+    .roles .cursor {
+      width: 9px; height: 1.05em;
+      background: var(--accent-2);
+      display: inline-block;
+      margin-left: 2px;
+      box-shadow: 0 0 8px rgba(75, 225, 208, 0.7);
+      animation: blink 1s steps(2) infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+
+    /* stats strip */
+    .stats {
+      display: flex;
+      gap: clamp(20px, 4vw, 40px);
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+    .stat { display: grid; gap: 2px; }
+    .stat .num {
+      font-size: 28px;
+      font-weight: 700;
+      background: var(--grad);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      font-variant-numeric: tabular-nums;
+      line-height: 1.1;
+    }
+    .stat .lbl {
+      font-size: 11px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* glass + cursor spotlight on cards */
+    .timeline-item {
+      background-color: rgba(20, 20, 29, 0.66);
+      background-image: radial-gradient(
+        220px circle at var(--mx, -200px) var(--my, -200px),
+        rgba(123, 97, 255, 0.16),
+        transparent 65%
+      );
+      backdrop-filter: blur(7px);
+      -webkit-backdrop-filter: blur(7px);
+    }
+    .timeline-item:hover {
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45), 0 0 30px rgba(123, 97, 255, 0.14);
+    }
+
+    /* numbered section headers */
+    .section-title::before {
+      content: attr(data-index);
+      font-size: 11px;
+      letter-spacing: normal;
+      color: var(--accent-2);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 3px 9px;
+      margin-right: 12px;
+      vertical-align: middle;
+    }
+
+    /* scroll reveal (added via JS so no-JS stays visible) */
+    .reveal-on-scroll {
+      opacity: 0;
+      transform: translateY(28px);
+      transition: opacity 0.7s ease, transform 0.7s cubic-bezier(.2, .8, .2, 1);
+    }
+    .reveal-on-scroll.in-view { opacity: 1; transform: none; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .aurora b, .roles .cursor, .status-pill .dot { animation: none; }
+      .reveal-on-scroll { opacity: 1; transform: none; transition: none; }
+    }
   </style>
 </head>
 <body>
+  <a class="utils-link" href="./utils.html" aria-label="Open utilities">
+    <span class="utils-tip">Utilities</span>
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M10.3 3.2a1 1 0 0 1 .97-.7h1.46a1 1 0 0 1 .97.7l.33 1.2a7.5 7.5 0 0 1 1.6.93l1.18-.42a1 1 0 0 1 1.2.45l.73 1.27a1 1 0 0 1-.2 1.25l-.93.83c.06.31.09.62.09.94s-.03.63-.09.94l.93.83a1 1 0 0 1 .2 1.25l-.73 1.27a1 1 0 0 1-1.2.45l-1.18-.42a7.5 7.5 0 0 1-1.6.93l-.33 1.2a1 1 0 0 1-.97.7h-1.46a1 1 0 0 1-.97-.7l-.33-1.2a7.5 7.5 0 0 1-1.6-.93l-1.18.42a1 1 0 0 1-1.2-.45l-.73-1.27a1 1 0 0 1 .2-1.25l.93-.83A7.6 7.6 0 0 1 4.5 12c0-.32.03-.63.09-.94l-.93-.83a1 1 0 0 1-.2-1.25l.73-1.27a1 1 0 0 1 1.2-.45l1.18.42a7.5 7.5 0 0 1 1.6-.93Z"/>
+      <circle cx="12" cy="12" r="2.6"/>
+    </svg>
+  </a>
+  <div class="scroll-progress"><div class="scroll-progress-bar" id="scrollBar"></div></div>
   <canvas id="bgCanvas" aria-hidden="true"></canvas>
+  <div class="aurora" aria-hidden="true"><b class="b1"></b><b class="b2"></b><b class="b3"></b></div>
   <main class="page">
     <header>
+      <div class="hero-top">
+        <span class="status-pill"><span class="dot"></span> Available for collaboration</span>
+      </div>
       <h1 class="reveal-name">Ramesh Basnet</h1>
+      <div class="roles" aria-hidden="true">
+        <span class="pre">~/</span><span class="word" id="roleWord"></span><span class="cursor"></span>
+      </div>
       <p class="subtitle">
         <span class="scramble-text" data-scramble-text="A concise record of experience, education, community work, and research.">A concise record of experience, education, community work, and research.</span>
       </p>
@@ -502,11 +749,15 @@
           <span class="copy-toast" aria-live="polite">Copied!</span>
         </a>
       </div>
+      <div class="stats">
+        <div class="stat"><span class="num" data-count="8" data-suffix="+">0</span><span class="lbl">Years in ML</span></div>
+        <div class="stat"><span class="num" data-count="6">0</span><span class="lbl">Publications</span></div>
+      </div>
     </header>
 
     <section class="section" aria-label="Experience">
       <div class="section-head">
-        <h2 class="section-title"><span class="scramble-text" data-scramble-text="Experience">Experience</span></h2>
+        <h2 class="section-title" data-index="01"><span class="scramble-text" data-scramble-text="Experience">Experience</span></h2>
         <button class="section-toggle" type="button" aria-label="Expand section" aria-pressed="false">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path class="toggle-horizontal" d="M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -651,7 +902,7 @@
 
     <section class="section" aria-label="Education">
       <div class="section-head">
-        <h2 class="section-title"><span class="scramble-text" data-scramble-text="Education">Education</span></h2>
+        <h2 class="section-title" data-index="02"><span class="scramble-text" data-scramble-text="Education">Education</span></h2>
         <button class="section-toggle" type="button" aria-label="Expand section" aria-pressed="false">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path class="toggle-horizontal" d="M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -700,7 +951,7 @@
 
     <section class="section" aria-label="Volunteering">
       <div class="section-head">
-        <h2 class="section-title"><span class="scramble-text" data-scramble-text="Volunteering">Volunteering</span></h2>
+        <h2 class="section-title" data-index="03"><span class="scramble-text" data-scramble-text="Volunteering">Volunteering</span></h2>
         <button class="section-toggle" type="button" aria-label="Expand section" aria-pressed="false">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path class="toggle-horizontal" d="M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -756,7 +1007,7 @@
 
     <section class="section" aria-label="Publications">
       <div class="section-head">
-        <h2 class="section-title"><span class="scramble-text" data-scramble-text="Publications">Publications</span></h2>
+        <h2 class="section-title" data-index="04"><span class="scramble-text" data-scramble-text="Publications">Publications</span></h2>
         <button class="section-toggle" type="button" aria-label="Expand section" aria-pressed="false">
           <svg viewBox="0 0 24 24" aria-hidden="true">
             <path class="toggle-horizontal" d="M5 12h14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
@@ -862,6 +1113,8 @@
     const nodes = [];
     const nodeCount = 80;
     const maxDist = 160;
+    const pointer = { x: null, y: null };
+    const pointerRadius = 220;
 
     function resizeBg() {
       bgCanvas.width = window.innerWidth;
@@ -887,6 +1140,10 @@
         const a = nodes[i];
         a.x += a.vx;
         a.y += a.vy;
+        a.vx *= 0.992;
+        a.vy *= 0.992;
+        if (Math.abs(a.vx) < 0.15) a.vx += (Math.random() - 0.5) * 0.08;
+        if (Math.abs(a.vy) < 0.15) a.vy += (Math.random() - 0.5) * 0.08;
         if (a.x < 0 || a.x > bgCanvas.width) a.vx *= -1;
         if (a.y < 0 || a.y > bgCanvas.height) a.vy *= -1;
 
@@ -914,6 +1171,35 @@
           }
         }
       }
+
+      // cursor interaction: pull nearby nodes and draw energy links to the pointer
+      if (pointer.x !== null) {
+        for (let i = 0; i < nodes.length; i++) {
+          const a = nodes[i];
+          const dx = a.x - pointer.x;
+          const dy = a.y - pointer.y;
+          const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+          if (dist < pointerRadius) {
+            const alpha = 1 - dist / pointerRadius;
+            bgCtx.beginPath();
+            bgCtx.moveTo(a.x, a.y);
+            bgCtx.lineTo(pointer.x, pointer.y);
+            bgCtx.strokeStyle = `rgba(75, 225, 208, ${0.55 * alpha})`;
+            bgCtx.lineWidth = 1;
+            bgCtx.stroke();
+            a.vx -= (dx / dist) * 0.02 * alpha;
+            a.vy -= (dy / dist) * 0.02 * alpha;
+          }
+        }
+        const glow = bgCtx.createRadialGradient(pointer.x, pointer.y, 0, pointer.x, pointer.y, 90);
+        glow.addColorStop(0, "rgba(123, 97, 255, 0.07)");
+        glow.addColorStop(1, "rgba(123, 97, 255, 0)");
+        bgCtx.fillStyle = glow;
+        bgCtx.beginPath();
+        bgCtx.arc(pointer.x, pointer.y, 90, 0, Math.PI * 2);
+        bgCtx.fill();
+      }
+
       requestAnimationFrame(drawBackground);
     }
 
@@ -924,6 +1210,12 @@
       resizeBg();
       initNodes();
     });
+    window.addEventListener("pointermove", (e) => {
+      pointer.x = e.clientX;
+      pointer.y = e.clientY;
+    }, { passive: true });
+    window.addEventListener("pointerleave", () => { pointer.x = pointer.y = null; });
+    window.addEventListener("blur", () => { pointer.x = pointer.y = null; });
 
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
@@ -1119,6 +1411,107 @@
       }
 
       emailLink.addEventListener("click", copyEmail);
+    }
+
+    /* ============================================================
+       FUTURISTIC ENHANCEMENT LAYER — interactions
+       ============================================================ */
+
+    // 1. Scroll progress bar
+    const scrollBar = document.getElementById("scrollBar");
+    function onScroll() {
+      const h = document.documentElement;
+      const max = h.scrollHeight - h.clientHeight;
+      const p = max > 0 ? h.scrollTop / max : 0;
+      if (scrollBar) scrollBar.style.width = (p * 100).toFixed(2) + "%";
+    }
+    window.addEventListener("scroll", onScroll, { passive: true });
+    onScroll();
+
+    // 2. Terminal-style role rotator (type / delete loop)
+    const ROLES = [
+      "Senior ML Engineer",
+      "AutoML Researcher",
+      "Edge & Embedded AI",
+      "Medical Imaging",
+      "Radio Host",
+    ];
+    const roleWord = document.getElementById("roleWord");
+    if (roleWord) {
+      let ri = 0, ci = 0, deleting = false;
+      (function typeLoop() {
+        const word = ROLES[ri];
+        if (!deleting) {
+          ci++;
+          roleWord.textContent = word.slice(0, ci);
+          if (ci === word.length) {
+            deleting = true;
+            return setTimeout(typeLoop, 1600);
+          }
+        } else {
+          ci--;
+          roleWord.textContent = word.slice(0, ci);
+          if (ci === 0) {
+            deleting = false;
+            ri = (ri + 1) % ROLES.length;
+          }
+        }
+        setTimeout(typeLoop, deleting ? 45 : 85);
+      })();
+    }
+
+    // 3. Animated stat counters
+    document.querySelectorAll(".stat .num").forEach((el) => {
+      const target = parseInt(el.dataset.count || "0", 10);
+      const suffix = el.dataset.suffix || "";
+      const steps = 30;
+      const inc = Math.max(1, Math.ceil(target / steps));
+      let cur = 0;
+      (function step() {
+        cur = Math.min(target, cur + inc);
+        el.textContent = cur + suffix;
+        if (cur < target) setTimeout(step, 34);
+      })();
+    });
+
+    // 4. Cursor spotlight on cards
+    document.querySelectorAll(".timeline-item").forEach((card) => {
+      card.addEventListener("pointermove", (e) => {
+        const r = card.getBoundingClientRect();
+        card.style.setProperty("--mx", e.clientX - r.left + "px");
+        card.style.setProperty("--my", e.clientY - r.top + "px");
+      });
+      card.addEventListener("pointerleave", () => {
+        card.style.setProperty("--mx", "-200px");
+        card.style.setProperty("--my", "-200px");
+      });
+    });
+
+    // 5. Magnetic link buttons
+    document.querySelectorAll(".link-btn").forEach((btn) => {
+      btn.addEventListener("pointermove", (e) => {
+        const r = btn.getBoundingClientRect();
+        const mx = e.clientX - (r.left + r.width / 2);
+        const my = e.clientY - (r.top + r.height / 2);
+        btn.style.transform = `translate(${mx * 0.18}px, ${my * 0.3}px)`;
+      });
+      btn.addEventListener("pointerleave", () => { btn.style.transform = ""; });
+    });
+
+    // 6. Scroll reveal for sections (class added here so no-JS stays visible)
+    if ("IntersectionObserver" in window) {
+      const io = new IntersectionObserver((entries) => {
+        entries.forEach((en) => {
+          if (en.isIntersecting) {
+            en.target.classList.add("in-view");
+            io.unobserve(en.target);
+          }
+        });
+      }, { threshold: 0.08 });
+      document.querySelectorAll(".section").forEach((s) => {
+        s.classList.add("reveal-on-scroll");
+        io.observe(s);
+      });
     }
   </script>
 </body>

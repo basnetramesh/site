@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>65W USB-PD Charger — Power Lab</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b0b0f'/%3E%3Cpath d='M34 8 L20 36 L30 36 L26 56 L46 28 L34 28 Z' fill='%237b61ff'/%3E%3C/svg%3E" />
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #0b0b0f;
+    --panel: #14141d;
+    --panel-2: #181826;
+    --text: #f5f6fb;
+    --muted: #b4b6c6;
+    --faint: #6f7186;
+    --accent: #7b61ff;
+    --energy: #4be1d0;
+    --amber: #ffb24b;
+    --line: rgba(255, 255, 255, 0.07);
+  }
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+    background: var(--bg); color: var(--text);
+    -webkit-font-smoothing: antialiased;
+  }
+  body {
+    min-height: 100vh;
+    padding: 40px 24px 72px;
+    background:
+      radial-gradient(900px 500px at 18% -8%, rgba(123,97,255,0.12), transparent 60%),
+      radial-gradient(800px 500px at 100% 0%, rgba(75,225,208,0.08), transparent 55%),
+      var(--bg);
+    overflow-x: hidden;
+  }
+  body::before {
+    content: ""; position: fixed; inset: -50%; z-index: 0; pointer-events: none;
+    background-image:
+      linear-gradient(var(--line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line) 1px, transparent 1px);
+    background-size: 46px 46px;
+    -webkit-mask-image: radial-gradient(circle at 50% 30%, #000 0%, transparent 70%);
+    mask-image: radial-gradient(circle at 50% 30%, #000 0%, transparent 70%);
+    animation: drift 40s linear infinite; opacity: 0.45;
+  }
+  @keyframes drift { to { transform: translate(46px, 46px); } }
+
+  .page { position: relative; z-index: 1; width: min(1120px, 100%); margin: 0 auto; display: grid; gap: 26px; }
+
+  /* back link */
+  .back { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); text-decoration: none; width: max-content; transition: color 0.2s ease, transform 0.2s ease; }
+  .back svg { width: 15px; height: 15px; }
+  .back:hover, .back:focus-visible { color: var(--text); transform: translateX(-2px); }
+
+  /* Header */
+  header { display: grid; gap: 12px; }
+  .eyebrow { letter-spacing: 0.26em; text-transform: uppercase; font-size: 11px; color: var(--accent); font-weight: 600; }
+  h1 { margin: 0; font-size: clamp(26px, 4vw, 40px); letter-spacing: -0.02em; }
+  h1 .glow { color: var(--energy); text-shadow: 0 0 26px rgba(75,225,208,0.45); }
+  .subtitle { margin: 0; max-width: 640px; color: var(--muted); line-height: 1.6; font-size: 14.5px; }
+
+  .gauge { max-width: 460px; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; display: grid; gap: 8px; margin-top: 4px; }
+  .gauge-top { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; color: var(--muted); }
+  .gauge-top b { color: var(--text); font-size: 15px; }
+  .gauge-top .used { color: var(--energy); }
+  .gauge-track { height: 10px; border-radius: 999px; background: rgba(255,255,255,0.06); overflow: hidden; }
+  .gauge-fill { height: 100%; width: 0%; border-radius: 999px; background: linear-gradient(90deg, var(--accent), var(--energy)); transition: width 0.5s cubic-bezier(.2,.7,.2,1); box-shadow: 0 0 14px rgba(75,225,208,0.45); }
+
+  /* Renegotiation banner */
+  .reneg {
+    position: fixed; top: 18px; left: 50%; transform: translateX(-50%) translateY(-140%); z-index: 50;
+    background: rgba(20,20,29,0.92); border: 1px solid rgba(123,97,255,0.5); backdrop-filter: blur(8px);
+    padding: 10px 20px; border-radius: 999px; font-size: 13px; font-weight: 600;
+    display: flex; align-items: center; gap: 10px; box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    transition: transform 0.35s cubic-bezier(.2,.8,.2,1); pointer-events: none;
+  }
+  .reneg.show { transform: translateX(-50%) translateY(0); }
+  .reneg .spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(123,97,255,0.3); border-top-color: var(--accent); animation: spin 0.7s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Stage: charger + live reference table — columns stretch to equal height */
+  .stage { display: grid; grid-template-columns: minmax(280px, 360px) 1fr; gap: clamp(24px, 5vw, 56px); align-items: stretch; }
+
+  /* Charger brick */
+  .charger { position: relative; display: flex; flex-direction: column; background: linear-gradient(160deg, #1b1b29, #101019); border: 1px solid var(--line); border-radius: 22px; padding: 16px; box-shadow: 0 30px 60px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.04); }
+  .charger-head { display: flex; align-items: center; justify-content: space-between; padding: 6px 8px 14px; border-bottom: 1px solid var(--line); margin-bottom: 14px; }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .brand .bolt { width: 30px; height: 30px; border-radius: 9px; background: linear-gradient(135deg, var(--accent), var(--energy)); display: grid; place-items: center; font-size: 16px; box-shadow: 0 0 18px rgba(123,97,255,0.45); }
+  .brand b { font-size: 15px; }
+  .brand span { display: block; font-size: 10.5px; color: var(--faint); letter-spacing: 0.18em; text-transform: uppercase; }
+  .charger-head .max { text-align: right; font-size: 11px; color: var(--faint); }
+  .charger-head .max b { color: var(--energy); font-size: 17px; }
+
+  .ports { display: grid; gap: 12px; position: relative; flex: 1; align-content: center; }
+  .port {
+    --pc: var(--energy); position: relative; height: 84px; border: 1px solid var(--line); border-radius: 14px;
+    background: var(--panel); cursor: pointer; padding: 12px 14px;
+    display: grid; grid-template-columns: 36px 1fr auto; align-items: center; gap: 12px;
+    text-align: left; color: var(--text); font: inherit;
+    transition: border-color 0.3s, transform 0.2s, box-shadow 0.3s, background 0.3s;
+  }
+  .port:hover { transform: translateX(2px); border-color: rgba(255,255,255,0.16); }
+  .port:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .port .usb { width: 28px; height: 28px; border-radius: 7px; background: rgba(255,255,255,0.05); display: grid; place-items: center; color: var(--faint); transition: color 0.3s, background 0.3s; }
+  .port .usb svg { width: 16px; height: 16px; }
+  .port .pname { font-size: 13px; font-weight: 600; }
+  .port .ptag { font-size: 10.5px; color: var(--faint); }
+  .port .pright { text-align: right; }
+  .port .pwatts { font-size: 20px; font-weight: 700; line-height: 1; }
+  .port .pspec { font-size: 10.5px; color: var(--muted); margin-top: 3px; min-height: 13px; }
+
+  .port.active { background: linear-gradient(135deg, rgba(75,225,208,0.10), var(--panel)); border-color: rgba(75,225,208,0.45); box-shadow: 0 0 0 1px rgba(75,225,208,0.15), 0 0 28px rgba(75,225,208,0.16); animation: portGlow 2.4s ease-in-out infinite; }
+  @keyframes portGlow { 0%,100%{box-shadow:0 0 0 1px rgba(75,225,208,.12),0 0 22px rgba(75,225,208,.12)} 50%{box-shadow:0 0 0 1px rgba(75,225,208,.28),0 0 34px rgba(75,225,208,.26)} }
+  .port.active .usb { color: var(--energy); background: rgba(75,225,208,0.12); }
+  .port.active .pwatts { color: var(--energy); }
+  /* shared low rail = amber accent */
+  .port.shared.active { --pc: var(--amber); background: linear-gradient(135deg, rgba(255,178,75,0.10), var(--panel)); border-color: rgba(255,178,75,0.45); }
+  .port.shared.active .usb { color: var(--amber); background: rgba(255,178,75,0.12); }
+  .port.shared.active .pwatts { color: var(--amber); }
+
+  .port.flicker { animation: flicker 0.5s ease both; }
+  @keyframes flicker { 0%{filter:brightness(1)} 20%{filter:brightness(.45)} 45%{filter:brightness(1.5)} 65%{filter:brightness(.7)} 100%{filter:brightness(1)} }
+
+  .prio { position: absolute; top: -8px; left: 12px; font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase; background: var(--panel-2); border: 1px solid var(--line); color: var(--faint); padding: 2px 7px; border-radius: 999px; }
+  .port.active .prio { color: var(--text); border-color: var(--pc); }
+
+  /* shared-rail bracket linking C3 + A */
+  .rail-bracket { position: absolute; right: -14px; width: 10px; border: 2px solid var(--amber); border-left: 0; border-radius: 0 8px 8px 0; opacity: 0; transition: opacity 0.35s; pointer-events: none; }
+  .rail-bracket.show { opacity: 0.8; }
+  .rail-bracket span { position: absolute; left: 16px; top: 50%; transform: translateY(-50%); white-space: nowrap; font-size: 10px; color: var(--amber); }
+
+  .hint { color: var(--faint); font-size: 12px; text-align: center; margin: 14px 2px 0; }
+
+  /* Reference table mirroring the official profile */
+  .ref { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px; }
+  .ref h3 { margin: 0 0 14px; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+  .ref h3 .ic { width: 24px; height: 24px; border-radius: 7px; background: rgba(75,225,208,0.16); color: var(--energy); display: grid; place-items: center; font-size: 13px; }
+  .ref h3 .sub { font-weight: 400; color: var(--faint); font-size: 11px; margin-left: auto; }
+  .ref-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  .ref-table th, .ref-table td { text-align: center; padding: 7px 8px; border-bottom: 1px solid var(--line); color: var(--muted); }
+  .ref-table th { color: var(--faint); font-weight: 600; font-size: 10.5px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .ref-table td.combo, .ref-table th.combo { text-align: left; }
+  .ref-table td.combo { color: var(--text); font-weight: 600; white-space: nowrap; }
+  .ref-table tr.live td { background: rgba(75,225,208,0.08); }
+  .ref-table tr.live td.combo { color: var(--energy); }
+  .ref-table code { font-family: ui-monospace, Menlo, Consolas, monospace; color: var(--text); }
+  .ref-table .grp td { padding-top: 12px; color: var(--faint); font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; border: 0; }
+
+  /* Info */
+  .info-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px; }
+  .card h3 { margin: 0 0 10px; font-size: 14px; display: flex; align-items: center; gap: 8px; }
+  .card h3 .ic { width: 24px; height: 24px; border-radius: 7px; background: rgba(123,97,255,0.18); color: var(--accent); display: grid; place-items: center; font-size: 13px; }
+  .card p, .card li { color: var(--muted); font-size: 13px; line-height: 1.6; margin: 0; }
+  .card b { color: var(--text); }
+  .glossary dt { font-weight: 700; font-size: 12.5px; color: var(--text); margin-top: 8px; }
+  .glossary dt:first-child { margin-top: 0; }
+  .glossary dd { margin: 2px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+  .glossary dt .acc { color: var(--energy); }
+
+  .note-bar { background: linear-gradient(135deg, rgba(255,178,75,0.10), var(--panel)); border: 1px solid rgba(255,178,75,0.35); border-radius: 16px; padding: 16px 18px; display: flex; gap: 14px; align-items: flex-start; }
+  .note-bar .ni { font-size: 20px; line-height: 1; }
+  .note-bar p { margin: 0; font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .note-bar b { color: var(--amber); }
+
+  footer { color: var(--faint); font-size: 12px; text-align: center; padding-top: 8px; }
+
+  @media (max-width: 760px) {
+    .stage { grid-template-columns: 1fr; gap: 26px; }
+    .rail-bracket { display: none; }
+    .charger { max-width: 420px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+
+  <a class="back" href="./utils.html">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+    Back to utilities
+  </a>
+
+  <header>
+    <span class="eyebrow">Interactive · USB Power Delivery</span>
+    <h1>65W GaN Charger — <span class="glow">Power Lab</span></h1>
+    <p class="subtitle">
+      Tap a port to occupy it. The charger follows a fixed <b style="color:var(--text)">power-distribution profile</b> —
+      the exact output of each port depends on which ports are in use. Watch it renegotiate live.
+    </p>
+    <div class="gauge">
+      <div class="gauge-top">
+        <span><b id="usedW" class="used">0W</b> negotiated of <b>65W</b></span>
+        <span id="portCount">0 ports active</span>
+      </div>
+      <div class="gauge-track"><div class="gauge-fill" id="gaugeFill"></div></div>
+    </div>
+  </header>
+
+  <section class="stage">
+    <div class="charger">
+      <div class="charger-head">
+        <div class="brand">
+          <div class="bolt">⚡</div>
+          <div><b>VoltCore 65</b><span>GaN · USB-PD 3.0</span></div>
+        </div>
+        <div class="max">total output<br><b>65W</b></div>
+      </div>
+      <div class="ports" id="ports"></div>
+      <p class="hint">Click a port to occupy / free it</p>
+    </div>
+
+    <div class="ref">
+      <h3><span class="ic">▤</span> Power-distribution profile <span class="sub">live row highlighted</span></h3>
+      <table class="ref-table" id="refTable">
+        <thead><tr><th class="combo">Ports in use</th><th>C1</th><th>C2</th><th>C3</th><th>A</th></tr></thead>
+        <tbody id="refBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- official behaviour note from the charger spec -->
+  <div class="note-bar">
+    <span class="ni">⚠️</span>
+    <p>
+      <b>Shared low-power rail:</b> USB-C3 and USB-A draw from one <b>5V⎓3A (15W)</b> rail.
+      If a low-power device is on USB-A — or a phone is trickle-charging (battery ≥ 80%) — the normal output of
+      USB-C3 is reduced. It's not recommended to charge a watch or sub-5W device on USB-A.
+    </p>
+  </div>
+
+  <section class="info-grid">
+    <div class="card">
+      <h3><span class="ic">⚙</span> How the split works</h3>
+      <p>Output isn't a free-for-all — it follows a fixed profile. <b>USB-C1 / C2</b> are the full-power PD rails,
+      <b>USB-C3</b> is a lower PD rail, and <b>USB-A</b> is the legacy QC/SCP rail. Occupying a port re-applies the
+      profile for that exact combination — that's the flicker you see.</p>
+    </div>
+    <div class="card">
+      <h3><span class="ic">⌁</span> The shared low rail</h3>
+      <p>USB-C3 and USB-A sit on <b>one 15W rail</b>. Used alone, each can take more; used together they split a single
+      <b>5V⎓3A</b> budget (≈7.5W each) — shown by the amber bracket linking them on the charger.</p>
+    </div>
+    <div class="card glossary">
+      <h3><span class="ic">A↔C</span> Protocols</h3>
+      <dl>
+        <dt><span class="acc">PD</span> — Power Delivery</dt>
+        <dd>USB-IF standard; negotiates voltage &amp; current dynamically.</dd>
+        <dt><span class="acc">QC</span> — Quick Charge</dt>
+        <dd>Qualcomm fast charge on the USB-A rail.</dd>
+        <dt><span class="acc">SCP / FCP</span> — Huawei</dt>
+        <dd>Low-voltage/high-current (SCP) and legacy high-voltage (FCP).</dd>
+      </dl>
+    </div>
+  </section>
+
+  <footer>Educational simulation · values follow the published charger profile · no frameworks, no backend</footer>
+</div>
+
+<div class="reneg" id="reneg"><span class="spin"></span><span id="renegText">USB-PD renegotiating power profile…</span></div>
+
+<script>
+/* =========================================================================
+   65W Charger Power Lab
+   Power output follows a FIXED profile table (the source of truth), keyed by
+   which ports are occupied.
+   ========================================================================= */
+
+const USB_ICON = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v15"/><path d="M9 7l3-4 3 4"/><circle cx="12" cy="20" r="1.4" fill="currentColor"/><path d="M12 13l-4-2v-2"/><path d="M12 11l4-2.5"/><rect x="14.4" y="6.6" width="3.2" height="3.2" rx="0.6" fill="currentColor" stroke="none"/></svg>`;
+
+/* Ports in fixed order c1,c2,c3,a — this order builds the rule key. */
+const PORT_DEFS = [
+  { id: "c1", name: "USB-C1", tag: "PD · full power" },
+  { id: "c2", name: "USB-C2", tag: "PD · full power" },
+  { id: "c3", name: "USB-C3", tag: "PD · low rail",   shared: true },
+  { id: "a",  name: "USB-A",  tag: "QC / SCP / FCP",  shared: true },
+];
+
+/* THE PROFILE TABLE — transcribed directly from the charger's spec diagram.
+   Key = comma-joined active port ids in c1,c2,c3,a order. Values are watts.
+   The C3+A pair shares one 5V⎓3A (15W) rail → 7.5W each when both are active. */
+const PROFILE = {
+  "c1":          { c1: 65 },
+  "c2":          { c2: 65 },
+  "c3":          { c3: 18 },
+  "a":           { a: 22.5 },
+
+  "c1,c2":       { c1: 45, c2: 18 },
+  "c1,c3":       { c1: 45, c3: 18 },
+  "c1,a":        { c1: 45, a: 18 },
+  "c2,c3":       { c2: 45, c3: 18 },
+  "c2,a":        { c2: 45, a: 18 },
+  "c3,a":        { c3: 7.5, a: 7.5 },          // 5V⎓3A in total
+
+  "c1,c2,c3":    { c1: 18, c2: 18, c3: 18 },
+  "c1,c2,a":     { c1: 18, c2: 18, a: 18 },
+  "c1,c3,a":     { c1: 45, c3: 7.5, a: 7.5 },
+  "c2,c3,a":     { c2: 45, c3: 7.5, a: 7.5 },
+
+  "c1,c2,c3,a":  { c1: 18, c2: 18, c3: 7.5, a: 7.5 },
+};
+
+/* State */
+const ports = {};
+PORT_DEFS.forEach(p => ports[p.id] = { connected: false, output: 0 });
+
+/* ---------- ALLOCATION (pure table lookup) ---------- */
+function activeKey() {
+  return PORT_DEFS.filter(d => ports[d.id].connected).map(d => d.id).join(",");
+}
+function computeAllocation() {
+  PORT_DEFS.forEach(d => ports[d.id].output = 0);
+  const rule = PROFILE[activeKey()];
+  if (rule) for (const id in rule) ports[id].output = rule[id];
+}
+
+function fmtW(w) { return (Number.isInteger(w) ? w : w.toFixed(1)) + "W"; }
+
+/* spec label derived from port + its negotiated output */
+function specOf(id, w) {
+  if (w <= 0) return "";
+  if (id === "a") {
+    if (w >= 22) return "SCP / QC";
+    if (w >= 12) return "QC / FCP";
+    return "5V ⎓ 3A rail";
+  }
+  if (w <= 8) return "5V ⎓ 3A rail";
+  return "PD";
+}
+
+/* ---------- BUILD PORTS ---------- */
+function buildPorts() {
+  const wrap = document.getElementById("ports");
+  wrap.innerHTML = "";
+  PORT_DEFS.forEach(def => {
+    const btn = document.createElement("button");
+    btn.className = "port" + (def.shared ? " shared" : "");
+    btn.id = "port-" + def.id;
+    btn.setAttribute("aria-pressed", "false");
+    btn.innerHTML = `
+      <span class="prio">${def.name.replace("USB-", "")}</span>
+      <span class="usb">${USB_ICON}</span>
+      <span><span class="pname">${def.name}</span><br><span class="ptag">${def.tag}</span></span>
+      <span class="pright"><div class="pwatts" id="w-${def.id}">0W</div><div class="pspec" id="s-${def.id}"></div></span>`;
+    btn.addEventListener("click", () => toggle(def.id));
+    wrap.appendChild(btn);
+  });
+  const bracket = document.createElement("div");
+  bracket.className = "rail-bracket";
+  bracket.id = "railBracket";
+  bracket.innerHTML = `<span>5V⎓3A<br>shared</span>`;
+  wrap.appendChild(bracket);
+}
+
+/* ---------- RENDER ---------- */
+function render() {
+  computeAllocation();
+  let used = 0, count = 0;
+  PORT_DEFS.forEach(def => {
+    const st = ports[def.id];
+    document.getElementById("w-" + def.id).textContent = fmtW(st.output);
+    document.getElementById("s-" + def.id).textContent = st.connected ? specOf(def.id, st.output) : "";
+    const el = document.getElementById("port-" + def.id);
+    el.classList.toggle("active", st.connected);
+    el.setAttribute("aria-pressed", st.connected ? "true" : "false");
+    if (st.connected) { used += st.output; count++; }
+  });
+  document.getElementById("usedW").textContent = fmtW(Math.round(used * 10) / 10);
+  document.getElementById("gaugeFill").style.width = Math.min(100, used / 65 * 100) + "%";
+  document.getElementById("portCount").textContent = count + (count === 1 ? " port active" : " ports active");
+  positionBracket();
+  highlightRef();
+}
+
+function positionBracket() {
+  const bracket = document.getElementById("railBracket");
+  const both = ports.c3.connected && ports.a.connected;
+  bracket.classList.toggle("show", both);
+  if (!both) return;
+  const wrap = document.getElementById("ports");
+  const wr = wrap.getBoundingClientRect();
+  const top = document.getElementById("port-c3").getBoundingClientRect().top - wr.top + 10;
+  const bottom = document.getElementById("port-a").getBoundingClientRect().bottom - wr.top - 10;
+  bracket.style.top = top + "px";
+  bracket.style.height = (bottom - top) + "px";
+}
+
+/* ---------- REFERENCE TABLE ---------- */
+const REF_GROUPS = [
+  ["1 port",  [["c1"], ["c2"], ["c3"], ["a"]]],
+  ["2 ports", [["c1","c2"], ["c1","c3"], ["c1","a"], ["c2","c3"], ["c2","a"], ["c3","a"]]],
+  ["3 ports", [["c1","c2","c3"], ["c1","c2","a"], ["c1","c3","a"], ["c2","c3","a"]]],
+  ["4 ports", [["c1","c2","c3","a"]]],
+];
+function buildRef() {
+  const body = document.getElementById("refBody");
+  body.innerHTML = "";
+  REF_GROUPS.forEach(([title, rows]) => {
+    const g = document.createElement("tr");
+    g.className = "grp";
+    g.innerHTML = `<td colspan="5">${title}</td>`;
+    body.appendChild(g);
+    rows.forEach(combo => {
+      const key = combo.join(",");
+      const rule = PROFILE[key];
+      const cell = id => rule[id] != null ? `<code>${fmtW(rule[id])}</code>` : "·";
+      const tr = document.createElement("tr");
+      tr.id = "ref-" + key;
+      tr.innerHTML = `<td class="combo">${combo.map(c => c.toUpperCase()).join(" + ")}</td>
+        <td>${cell("c1")}</td><td>${cell("c2")}</td><td>${cell("c3")}</td><td>${cell("a")}</td>`;
+      body.appendChild(tr);
+    });
+  });
+}
+function highlightRef() {
+  document.querySelectorAll("#refBody tr").forEach(tr => tr.classList.remove("live"));
+  const key = activeKey();
+  if (key) { const row = document.getElementById("ref-" + key); if (row) row.classList.add("live"); }
+}
+
+/* ---------- INTERACTION ---------- */
+function toggle(id) {
+  ports[id].connected = !ports[id].connected;
+  triggerRenegotiation();
+  render();
+}
+
+function triggerRenegotiation() {
+  const active = PORT_DEFS.filter(d => ports[d.id].connected).length;
+  const banner = document.getElementById("reneg");
+  document.getElementById("renegText").textContent = active > 1
+    ? "Power redistribution active — applying profile…"
+    : "USB-PD renegotiating power profile…";
+  banner.classList.add("show");
+  PORT_DEFS.forEach(def => {
+    if (!ports[def.id].connected) return;
+    const el = document.getElementById("port-" + def.id);
+    el.classList.remove("flicker"); void el.offsetWidth; el.classList.add("flicker");
+  });
+  clearTimeout(triggerRenegotiation._t);
+  triggerRenegotiation._t = setTimeout(() => banner.classList.remove("show"), 520);
+}
+
+window.addEventListener("resize", positionBracket);
+
+/* ---------- BOOT ---------- */
+buildPorts();
+buildRef();
+render();
+</script>
+</body>
+</html>

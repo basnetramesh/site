@@ -2,68 +2,209 @@
 <html lang="en">
 
 <head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width,initial-scale=1" />
-	<title>Utils</title>
-	<style>
-		:root {
-			font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-		}
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Utilities — Ramesh Basnet</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b0b0f'/%3E%3Ccircle cx='32' cy='32' r='9' fill='none' stroke='%234be1d0' stroke-width='3'/%3E%3Cg stroke='%237b61ff' stroke-width='3' stroke-linecap='round'%3E%3Cpath d='M32 8v8'/%3E%3Cpath d='M32 48v8'/%3E%3Cpath d='M8 32h8'/%3E%3Cpath d='M48 32h8'/%3E%3C/g%3E%3C/svg%3E" />
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0b0f;
+      --panel: #14141d;
+      --text: #f5f6fb;
+      --muted: #b4b6c6;
+      --faint: #6f7186;
+      --accent: #7b61ff;
+      --energy: #4be1d0;
+      --amber: #ffb24b;
+      --line: rgba(255, 255, 255, 0.07);
+      --grad: linear-gradient(120deg, #7b61ff, #4be1d0);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background: var(--bg); color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+    body {
+      min-height: 100vh;
+      padding: 56px 24px 80px;
+      overflow-x: hidden;
+    }
 
-		body {
-			margin: 0;
-			min-height: 100vh;
-			display: grid;
-			place-items: center;
-			background: #0b1220;
-			color: #e7eefc;
-		}
+    /* animated grid backdrop (shared with charger lab) */
+    body::before {
+      content: ""; position: fixed; inset: -50%; z-index: 0; pointer-events: none;
+      background-image:
+        linear-gradient(var(--line) 1px, transparent 1px),
+        linear-gradient(90deg, var(--line) 1px, transparent 1px);
+      background-size: 46px 46px;
+      -webkit-mask-image: radial-gradient(circle at 50% 24%, #000 0%, transparent 68%);
+      mask-image: radial-gradient(circle at 50% 24%, #000 0%, transparent 68%);
+      animation: drift 40s linear infinite; opacity: 0.4;
+    }
+    @keyframes drift { to { transform: translate(46px, 46px); } }
 
-		.card {
-			width: min(520px, calc(100% - 28px));
-			padding: 18px;
-			border-radius: 14px;
-			border: 1px solid rgba(255, 255, 255, 0.12);
-			background: rgba(255, 255, 255, 0.06);
-			box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
-		}
+    /* aurora glow field */
+    .aurora {
+      position: fixed; inset: 0; z-index: 0; pointer-events: none;
+      overflow: hidden; filter: blur(120px); opacity: 0.16;
+    }
+    .aurora b { position: absolute; display: block; border-radius: 50%; }
+    .aurora .b1 { width: 540px; height: 540px; background: #5b46c4; top: -200px; left: -120px; animation: float1 24s ease-in-out infinite; }
+    .aurora .b2 { width: 480px; height: 480px; background: #2e8f86; top: 4%; right: -160px; animation: float2 30s ease-in-out infinite; }
+    @keyframes float1 { 50% { transform: translate(80px, 70px) scale(1.12); } }
+    @keyframes float2 { 50% { transform: translate(-70px, 90px) scale(1.16); } }
 
-		h1 {
-			margin: 0 0 10px;
-			font-size: 18px;
-		}
+    .page { position: relative; z-index: 1; width: min(980px, 100%); margin: 0 auto; display: grid; gap: 36px; }
 
-		a {
-			display: inline-flex;
-			align-items: center;
-			justify-content: center;
-			padding: 12px 14px;
-			border-radius: 12px;
-			border: 1px solid rgba(255, 255, 255, 0.14);
-			background: rgba(255, 255, 255, 0.10);
-			color: #e7eefc;
-			text-decoration: none;
-			font-weight: 650;
-		}
+    /* back link */
+    .back {
+      display: inline-flex; align-items: center; gap: 8px;
+      font-size: 13px; color: var(--muted); text-decoration: none;
+      width: max-content; transition: color 0.2s ease, transform 0.2s ease;
+    }
+    .back svg { width: 15px; height: 15px; }
+    .back:hover, .back:focus-visible { color: var(--text); transform: translateX(-2px); }
 
-		a:hover {
-			background: rgba(255, 255, 255, 0.14);
-		}
+    header { display: grid; gap: 12px; }
+    .eyebrow { letter-spacing: 0.26em; text-transform: uppercase; font-size: 11px; color: var(--accent); font-weight: 600; }
+    h1 { margin: 0; font-size: clamp(30px, 4.4vw, 46px); letter-spacing: -0.02em; line-height: 1.05; }
+    h1 .glow {
+      background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent;
+    }
+    .subtitle { margin: 0; max-width: 580px; color: var(--muted); line-height: 1.6; font-size: 14.5px; }
 
-		.hint {
-			margin-top: 10px;
-			opacity: 0.75;
-			font-size: 12px;
-		}
-	</style>
+    /* tool grid */
+    .tools { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 18px; }
+
+    .tool {
+      position: relative; display: flex; flex-direction: column; gap: 14px;
+      padding: 22px; border-radius: 18px; text-decoration: none; color: var(--text);
+      background-color: rgba(20, 20, 29, 0.66);
+      background-image: radial-gradient(220px circle at var(--mx, -200px) var(--my, -200px), rgba(123, 97, 255, 0.16), transparent 65%);
+      border: 1px solid var(--line);
+      backdrop-filter: blur(7px); -webkit-backdrop-filter: blur(7px);
+      overflow: hidden;
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .tool:hover, .tool:focus-visible {
+      transform: translateY(-3px);
+      border-color: rgba(75, 225, 208, 0.4);
+      box-shadow: 0 18px 50px rgba(0, 0, 0, 0.45), 0 0 30px rgba(123, 97, 255, 0.14);
+    }
+    /* animated top accent line */
+    .tool::after {
+      content: ""; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: var(--grad); transform: scaleX(0); transform-origin: left;
+      transition: transform 0.35s cubic-bezier(.2,.8,.2,1);
+    }
+    .tool:hover::after, .tool:focus-visible::after { transform: scaleX(1); }
+
+    .tool-icon {
+      width: 46px; height: 46px; border-radius: 13px;
+      display: grid; place-items: center; flex-shrink: 0;
+      background: rgba(123, 97, 255, 0.14); color: var(--accent);
+      border: 1px solid rgba(123, 97, 255, 0.25);
+      transition: background 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+    }
+    .tool-icon svg { width: 23px; height: 23px; }
+    .tool.energy .tool-icon { background: rgba(75, 225, 208, 0.12); color: var(--energy); border-color: rgba(75, 225, 208, 0.28); }
+    .tool.amber .tool-icon { background: rgba(255, 178, 75, 0.12); color: var(--amber); border-color: rgba(255, 178, 75, 0.28); }
+
+    .tool-tag { font-size: 10.5px; letter-spacing: 0.18em; text-transform: uppercase; color: var(--faint); }
+    .tool h2 { margin: 0; font-size: 17px; font-weight: 650; letter-spacing: -0.01em; }
+    .tool p { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.55; }
+
+    .tool-foot { margin-top: auto; display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--energy); font-weight: 600; }
+    .tool-foot svg { width: 15px; height: 15px; transition: transform 0.25s ease; }
+    .tool:hover .tool-foot svg, .tool:focus-visible .tool-foot svg { transform: translateX(4px); }
+
+    footer { color: var(--faint); font-size: 12px; text-align: center; padding-top: 6px; }
+
+    @media (prefers-reduced-motion: reduce) {
+      .aurora b, body::before { animation: none; }
+    }
+  </style>
 </head>
 
 <body>
-	<div class="card">
-		<h1>Utils</h1>
-		<a href="./unicode_to_preeti.html">Open Unicode → Preeti Converter</a>
-		<a href="./text_to_unicode.html">Open Text → Unicode Converter</a>
-	</div>
+  <div class="aurora" aria-hidden="true"><b class="b1"></b><b class="b2"></b></div>
+
+  <main class="page">
+    <a class="back" href="./index.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+      Back to profile
+    </a>
+
+    <header>
+      <span class="eyebrow">Toolbox</span>
+      <h1>Little <span class="glow">utilities</span></h1>
+      <p class="subtitle">A small collection of self-contained tools — no frameworks, no backend. Everything runs right in your browser.</p>
+    </header>
+
+    <section class="tools">
+      <a class="tool" href="./text_to_unicode.html">
+        <span class="tool-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7V5h16v2"/><path d="M9 19h6"/><path d="M12 5v14"/></svg>
+        </span>
+        <div>
+          <span class="tool-tag">Romanized → देवनागरी</span>
+          <h2>Text → Unicode</h2>
+        </div>
+        <p>Type Romanized Nepali phonetically and get proper Nepali Unicode, line by line.</p>
+        <span class="tool-foot">Open converter
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+        </span>
+      </a>
+
+      <a class="tool" href="./unicode_to_preeti.html">
+        <span class="tool-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 7h7l-2 10"/><path d="M14 7h7l-2 10"/><path d="M10 12h4"/></svg>
+        </span>
+        <div>
+          <span class="tool-tag">Unicode → Preeti font</span>
+          <h2>Unicode → Preeti</h2>
+        </div>
+        <p>Convert Nepali Unicode into legacy Preeti keystrokes — ready to paste with the Preeti font.</p>
+        <span class="tool-foot">Open converter
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+        </span>
+      </a>
+
+      <a class="tool energy" href="./charger.html">
+        <span class="tool-icon">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z"/></svg>
+        </span>
+        <div>
+          <span class="tool-tag">Interactive · USB-PD</span>
+          <h2>Charger Power Lab</h2>
+        </div>
+        <p>Tap the ports of a 65W GaN charger and watch it renegotiate power across its fixed profile.</p>
+        <span class="tool-foot">Open the lab
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+        </span>
+      </a>
+    </section>
+
+    <footer> ----- </footer>
+  </main>
+
+  <script>
+    // cursor spotlight on tool cards (mirrors the profile page)
+    document.querySelectorAll(".tool").forEach((card) => {
+      card.addEventListener("pointermove", (e) => {
+        const r = card.getBoundingClientRect();
+        card.style.setProperty("--mx", e.clientX - r.left + "px");
+        card.style.setProperty("--my", e.clientY - r.top + "px");
+      });
+      card.addEventListener("pointerleave", () => {
+        card.style.setProperty("--mx", "-200px");
+        card.style.setProperty("--my", "-200px");
+      });
+    });
+  </script>
 </body>
 
 </html>
